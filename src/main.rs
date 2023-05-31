@@ -1,19 +1,36 @@
+use std::env;
+use dotenv::dotenv;
 
-use axum::{
-    routing::get,
-    Router,
-};
+#[macro_use]
+extern crate rbatis;
+extern crate rbs;
+
+#[path = "./models/users.rs"]
+mod users;
+
+#[path = "./index.rs"]
+mod index;
+
 
 #[tokio::main]
 async fn main() {
-    // build our application with a single route
-    let app = Router::new().route("/", get(|| async { "Hello, World!" }));
+
+    dotenv().ok();
+    use rbatis::Rbatis;
+    use rbdc_pg::driver::PgDriver;
+
+    // println!("{}", env::var("DATABASE_URL").expect("No Connection"));
+
+    let conn = env::var("DATABASE_URL").expect("No Connection");
+
+    let rb = Rbatis::new();
+    rb.init(PgDriver {}, &conn).unwrap();
+
+    // users::drop(&rb).await.map_err(|err| println!("{:?}", err)).ok();
+    users::up(&rb).await;
 
 
-    // run it with hyper on localhost:3000
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    index::server();
+
 }
 

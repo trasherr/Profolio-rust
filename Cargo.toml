@@ -8,3 +8,8 @@ edition = "2021"
 [dependencies]
 axum = { version = "0.6.18", features = ["headers"] }
 tokio = { version = "1.28.2",  features = ["full"]}
+dotenv = "0.15.0"
+rbs = { version = "4.3"}
+rbatis = { version = "4.3"}
+rbdc-pg={version="4.3"}
+serde = { version = "1", features = ["derive"] }
