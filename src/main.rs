@@ -1,36 +1,51 @@
-use std::env;
+extern crate dotenv;
+
 use dotenv::dotenv;
+use std::env;
 
-#[macro_use]
-extern crate rbatis;
-extern crate rbs;
+use axum::Router;
 
-#[path = "./models/users.rs"]
-mod users;
 
-#[path = "./index.rs"]
-mod index;
+// pub use self::error::{Error, Result};
+// use crate::ctx::Ctx;
+// use crate::log::log_request;
+// use crate::model::ModelController;
+use axum::extract::{Path, Query};
+use axum::http::{Method, Uri};
+use axum::response::{Html, IntoResponse, Response};
+use axum::routing::{get, get_service};
+use serde::Deserialize;
+use serde_json::json;
+use std::net::SocketAddr;
+use tower_cookies::CookieManagerLayer;
+// use tower_http::services::ServeDir;
+use uuid::Uuid;
+use sea_orm::{Database, DatabaseConnection};
+
+mod routers;
 
 
 #[tokio::main]
 async fn main() {
 
     dotenv().ok();
-    use rbatis::Rbatis;
-    use rbdc_pg::driver::PgDriver;
 
-    // println!("{}", env::var("DATABASE_URL").expect("No Connection"));
+    let conn_str = env::var("DATABASE_URL").expect("No Connection");
+    let _conn = Database::connect(conn_str).await.expect("Database connection failed");
+    server().await;
 
-    let conn = env::var("DATABASE_URL").expect("No Connection");
+}
 
-    let rb = Rbatis::new();
-    rb.init(PgDriver {}, &conn).unwrap();
+pub async fn server() {
+    
+    let app = Router::new().merge(routers::auth_routes::auth_router());
+    //.route("/", get(|| async { "Hello, World!" }));
 
-    // users::drop(&rb).await.map_err(|err| println!("{:?}", err)).ok();
-    users::up(&rb).await;
-
-
-    index::server();
-
+    
+    // run it with hyper on localhost:3000
+    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }
 
