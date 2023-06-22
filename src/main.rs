@@ -23,6 +23,7 @@ use axum::{Router, Extension};
 use sea_orm::{Database, DatabaseConnection};
 
 mod routers;
+mod utils;
 
 
 #[tokio::main]
@@ -40,8 +41,7 @@ async fn main() {
 pub async fn server(conn: DatabaseConnection) {
     
     let app = Router::new().merge(routers::auth_routes::auth_router()).layer(Extension(conn));
-    //.route("/", get(|| async { "Hello, World!" }));
-
+  
     
     // run it with hyper on localhost:3000
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())

@@ -1,31 +1,81 @@
 
 use axum::{response::{IntoResponse}, http::StatusCode, Json, Extension};
 use entity::user;
-use sea_orm::{ActiveValue, Set, ActiveModelTrait, DatabaseConnection};
-use serde_json::{json, Value};
+use sea_orm::{ActiveValue, Set, ActiveModelTrait, DatabaseConnection, ColumnTrait, Condition, EntityTrait, QueryFilter};
+use serde::Deserialize;
+use serde_json::json;
 use uuid::Uuid;
 
-pub async fn login() -> impl IntoResponse {
-    let greeting = "fdsa";
-    let hello = String::from("Hello ");
+use digest::Digest;
+use sha2::Sha256;
+use crate::utils::jwt;
 
-    (StatusCode::OK, Json(json!({ "message": hello + greeting })))
+#[derive(Deserialize)]
+pub struct CreateUser{
+    email: String,
+    password: String,
+    name: String,
+    phone: String,
+    phone_code: i32
 }
 
-pub async fn register(Extension(conn): Extension<DatabaseConnection>) -> impl IntoResponse {
 
-    let mut user = user::ActiveModel { 
-        id: ActiveValue::Set(1),
-        name: Set("Prakhar".to_owned()),
+#[derive(Deserialize)]
+pub struct LoginUser{
+    email: String,
+    password: String
+}
+
+
+
+fn create_hash<D>(msg: &str, mut hasher: D) -> String
+where
+    D: Digest,
+    digest::Output<D>: std::fmt::LowerHex,
+{
+    hasher.update(msg);
+    format!("{:x}", hasher.finalize())
+}
+
+pub async fn login(Extension(conn): Extension<DatabaseConnection>, Json(user_data): Json<LoginUser>) -> impl IntoResponse {
+
+    let hashed = create_hash(&user_data.password, Sha256::default());
+
+
+    let user = user::Entity::find().filter(
+        Condition::all()
+        .add(user::Column::Email.eq(&user_data.email))
+        .add(user::Column::Password.eq(hashed))
+    )
+    .one(&conn)
+    .await.unwrap();
+
+    if user.is_none() {
+        return (StatusCode::UNAUTHORIZED, Json(json!({ "succeeded": false, "token": "", "errors": ["Invalid credentials"] })))
+    }
+
+    let token = jwt::encode_jwt(user.unwrap().email);
+
+    (StatusCode::OK, Json(json!({ "succeeded": true, "token": token.unwrap(), "errors": [] })))
+}
+
+pub async fn register(Extension(conn): Extension<DatabaseConnection>, Json(user_data): Json<CreateUser>) -> impl IntoResponse {
+
+
+    let hashed = create_hash(&user_data.password, Sha256::default());
+
+    let user = user::ActiveModel { 
+        name: Set(user_data.name),
         uuid: Set(Uuid::new_v4()),
-        email: Set("Prakhar@gmail.com".to_owned()) ,
-        password: Set("Prakhar".to_owned()),
-        phone: Set("Prakhar".to_owned()),
-        phone_code: ActiveValue::set(91),
+        email: Set(user_data.email) ,
+        password: Set(hashed),
+        phone: Set(user_data.phone),
+        phone_code: ActiveValue::set(user_data.phone_code),
         experience: Set(0),
         ..Default::default()
     
     };
-    let insert: user::Model = user.insert(&conn).await.unwrap();
-    (StatusCode::OK, Json(json!({ "message": "er" })))
+    user.insert(&conn).await.unwrap();
+    
+    (StatusCode::OK, Json(json!({ "succeeded": true, "errors": [] })))
 }
