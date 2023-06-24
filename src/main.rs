@@ -1,9 +1,10 @@
 extern crate dotenv;
 
 use dotenv::dotenv;
+use utils::guard;
 use std::env;
 
-use axum::{Router, Extension};
+use axum::{Router, Extension, middleware};
 
 
 // pub use self::error::{Error, Result};
@@ -40,7 +41,11 @@ async fn main() {
 
 pub async fn server(conn: DatabaseConnection) {
     
-    let app = Router::new().merge(routers::auth_routes::auth_router()).layer(Extension(conn));
+    let app = Router::new()
+    .merge(routers::user_routes::user_router())
+    .route_layer(middleware::from_fn(guard::guard))
+    .merge(routers::auth_routes::auth_router())
+    .layer(Extension(conn));
   
     
     // run it with hyper on localhost:3000

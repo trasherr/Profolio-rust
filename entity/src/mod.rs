@@ -2,4 +2,6 @@
 
 pub mod prelude;
 
+pub mod technology;
 pub mod user;
+pub mod user_technology;
