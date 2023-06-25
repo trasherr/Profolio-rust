@@ -25,7 +25,7 @@ use sea_orm::{Database, DatabaseConnection};
 
 mod routers;
 mod utils;
-
+mod models;
 
 #[tokio::main]
 async fn main() {

@@ -2,7 +2,7 @@ use sea_orm_migration::async_trait::async_trait;
 use sea_orm_migration::prelude::*;
 use sea_orm_migration::sea_orm::Set;
 use sea_orm_migration::sea_orm::entity::*;
-
+use uuid::Uuid;
 use entity::technology;
 
 #[derive(DeriveMigrationName)]
@@ -18,6 +18,7 @@ impl MigrationTrait for Migration {
         technology::ActiveModel { 
             title: Set("Axum".to_owned()),
             normalized_title: Set("AXUM".to_owned()),
+            uuid: Set(Uuid::new_v4()),
             ..Default::default()
         
         }.insert(db).await.unwrap();
@@ -25,6 +26,7 @@ impl MigrationTrait for Migration {
         technology::ActiveModel { 
             title: Set("Angular".to_owned()),
             normalized_title: Set("ANGULAR".to_owned()),
+            uuid: Set(Uuid::new_v4()),
             ..Default::default()
         
         }.insert(db).await.unwrap();
@@ -32,6 +34,7 @@ impl MigrationTrait for Migration {
         technology::ActiveModel { 
             title: Set(".Net".to_owned()),
             normalized_title: Set(".NET".to_owned()),
+            uuid: Set(Uuid::new_v4()),
             ..Default::default()
         
         }.insert(db).await.unwrap();
@@ -39,6 +42,7 @@ impl MigrationTrait for Migration {
         technology::ActiveModel { 
             title: Set("NodeJs".to_owned()),
             normalized_title: Set("NODEJS".to_owned()),
+            uuid: Set(Uuid::new_v4()),
             ..Default::default()
         
         }.insert(db).await.unwrap();
@@ -46,6 +50,7 @@ impl MigrationTrait for Migration {
         technology::ActiveModel { 
             title: Set("Rust".to_owned()),
             normalized_title: Set("RUST".to_owned()),
+            uuid: Set(Uuid::new_v4()),
             ..Default::default()
         
         }.insert(db).await.unwrap();

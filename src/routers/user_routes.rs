@@ -13,7 +13,8 @@ pub fn user_router() -> Router {
     .allow_origin(Any);
 
     Router::new()
-    .route("/user",get(user_handler::get_user))
+    .route("/user",post(user_handler::update))
+    .route("/user/tech",post(user_handler::add_tech))
     // .route("/login",post(auth_handler::login))
     .layer(cors)
 }

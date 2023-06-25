@@ -15,10 +15,13 @@ pub struct Model {
     pub password: String,
     pub phone: String,
     pub phone_code: i32,
+    pub profession: Option<String>,
+    pub ctc: i32,
     pub experience: i32,
     pub company: Option<String>,
     pub linkedin: Option<String>,
     pub github: Option<String>,
+    pub others: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

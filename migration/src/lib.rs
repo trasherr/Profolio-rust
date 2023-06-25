@@ -2,9 +2,12 @@ pub use sea_orm_migration::prelude::*;
 
 mod m20220101_000001_create_table;
 mod m20230623_113733_create_tech_table;
-mod m20230623_114507_seed_tech_table;
 mod m20230624_102249_create_user_tech_table;
 
+
+ //  uncomment for seeding // only works after creating entities
+
+mod m20230623_114507_seed_tech_table;
 pub struct Migrator;
 
 #[async_trait::async_trait]
@@ -13,8 +16,10 @@ impl MigratorTrait for Migrator {
         vec![
             Box::new(m20220101_000001_create_table::Migration),
             Box::new(m20230623_113733_create_tech_table::Migration),
-            Box::new(m20230623_114507_seed_tech_table::Migration),
             Box::new(m20230624_102249_create_user_tech_table::Migration),
+
+            //  uncomment for seeding // only works after creating entities
+            Box::new(m20230623_114507_seed_tech_table::Migration),
         ]
     }
 }

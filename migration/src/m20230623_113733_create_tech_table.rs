@@ -21,6 +21,7 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
+                    .col(ColumnDef::new(Technology::Uuid).uuid().unique_key().not_null())
                     .col(ColumnDef::new(Technology::Title).string().not_null())
                     .col(ColumnDef::new(Technology::NormalizedTitle).string().not_null().unique_key())
                     .to_owned(),
@@ -43,6 +44,7 @@ impl MigrationTrait for Migration {
 pub enum Technology {
     Table,
     Id,
+    Uuid,
     Title,
     NormalizedTitle,
 }
