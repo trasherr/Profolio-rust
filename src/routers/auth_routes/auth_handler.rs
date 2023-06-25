@@ -41,7 +41,6 @@ pub async fn login(Extension(conn): Extension<DatabaseConnection>, Json(user_dat
 
     let hashed = create_hash(&user_data.password, Sha256::default());
 
-
     let user = user::Entity::find().filter(
         Condition::all()
         .add(user::Column::Email.eq(&user_data.email))

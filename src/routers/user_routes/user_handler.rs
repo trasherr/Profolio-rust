@@ -1,10 +1,10 @@
-use axum::{response::{IntoResponse}, http::StatusCode, Json, Extension, headers::{authorization::Bearer, Authorization}, TypedHeader};
+use axum::{response::{IntoResponse}, http::StatusCode, Json, Extension};
 use entity::{user::{self, Model}, user_technology, technology};
-use sea_orm::{ query::*, DatabaseConnection, ColumnTrait, Condition, EntityTrait, QueryFilter, Set, ActiveModelTrait};
+use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::json;
 use uuid::Uuid;
-use crate::{utils::jwt, models::user_model::UserModel};
+use crate::models::user_model::UserModel;
 
 #[derive(Deserialize)]
 pub struct UserSubDetails{
@@ -66,7 +66,7 @@ pub async fn add_tech(
 
 
     let mut user_techs: Vec<user_technology::ActiveModel> = [].to_vec();
-    for (i, item) in techs.into_iter().enumerate() {
+    for (_, item) in techs.into_iter().enumerate() {
         let temp: user_technology::ActiveModel = user_technology::ActiveModel { 
             user_id: Set(user.id),
             technology_id: Set(item.id),
@@ -76,7 +76,7 @@ pub async fn add_tech(
         user_techs.push(temp);
     }
 
-    let res= user_technology::Entity::insert_many(user_techs).exec(&conn).await
+    let _res= user_technology::Entity::insert_many(user_techs).exec(&conn).await
     .map_err(|_| { (StatusCode::INTERNAL_SERVER_ERROR,Json(json!({ "succeeded": true, "errors": ["Failed to add technology"] }))) });
 
     (StatusCode::OK, Json(json!({ "succeeded": true, "errors": [] })))
