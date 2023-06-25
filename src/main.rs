@@ -45,6 +45,8 @@ pub async fn server(conn: DatabaseConnection) {
     .merge(routers::user_routes::user_router())
     .route_layer(middleware::from_fn(guard::guard))
     .merge(routers::auth_routes::auth_router())
+
+    .merge(routers::home_routes::home_routes())
     .layer(Extension(conn));
   
     
