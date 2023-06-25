@@ -4,7 +4,7 @@ use sea_orm::{ query::*, DatabaseConnection, ColumnTrait, Condition, EntityTrait
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use uuid::Uuid;
-use crate::utils::jwt;
+use crate::{utils::jwt, models::user_model::UserModel};
 
 #[derive(Deserialize)]
 pub struct UserSubDetails{
@@ -82,3 +82,25 @@ pub async fn add_tech(
     (StatusCode::OK, Json(json!({ "succeeded": true, "errors": [] })))
 }
 
+
+pub async fn user(Extension(user): Extension<Model>) -> impl IntoResponse{
+
+    let data = UserModel {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        phone_code: user.phone_code,
+        ctc: user.ctc,
+        profession: user.profession,
+        experience: user.experience,
+        company: user.company,
+
+        uuid: user.uuid,
+        linkedin: user.linkedin,
+        github: user.github,
+        others: user.others
+    };
+
+    (StatusCode::OK,Json(data))
+
+}
