@@ -22,6 +22,7 @@ use axum::{Router, Extension, middleware};
 // // use tower_http::services::ServeDir;
 // use uuid::Uuid;
 use sea_orm::{Database, DatabaseConnection};
+use migration::{Migrator, MigratorTrait};
 
 mod routers;
 mod utils;
@@ -34,7 +35,7 @@ async fn main() {
 
     let conn_str = env::var("DATABASE_URL").expect("No Connection");
     let conn = Database::connect(conn_str).await.expect("Database connection failed");
-
+    Migrator::up(&conn, None).await?;
     server(conn).await;
 
 }
