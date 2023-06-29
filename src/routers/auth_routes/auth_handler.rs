@@ -66,7 +66,7 @@ pub async fn register(Extension(conn): Extension<DatabaseConnection>, Json(user_
     let user = user::ActiveModel { 
         name: Set(user_data.name),
         uuid: Set(Uuid::new_v4()),
-        email: Set(user_data.email) ,
+        email: Set(user_data.email.clone()) ,
         password: Set(hashed),
         phone: Set(user_data.phone),
         phone_code: ActiveValue::set(user_data.phone_code),
@@ -75,6 +75,7 @@ pub async fn register(Extension(conn): Extension<DatabaseConnection>, Json(user_
     
     };
     user.insert(&conn).await.unwrap();
+    let token = jwt::encode_jwt(user_data.email.clone());
     
-    (StatusCode::OK, Json(json!({ "succeeded": true, "errors": [] })))
+    (StatusCode::OK, Json(json!({ "succeeded": true, "token": token.unwrap(),"errors": [] })))
 }

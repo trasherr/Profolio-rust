@@ -19,6 +19,12 @@ sudo apt install postgresql postgresql-contrib
 sudo systemctl start postgresql.service
 
 sudo -i -u postgres
+psql
+
+CREATE DATABASE database_name;
+CREATE  USER user_name;
+\password user_name //change password
+GRANT ALL PRIVILEGES ON DATABASE "database_name" to my_username;
 
 \l //list db
 \c _name /// select db
