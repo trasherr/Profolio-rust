@@ -40,16 +40,16 @@ pub async fn update(
     u.experience = Set(user_data.experience);
 
     let u: user::Model = u.update(&conn).await.unwrap();
-    (StatusCode::OK, Json(json!({
-        "email": u.email, 
-        "name": u.name, 
-        "uuid": u.uuid,
-        "ctc": u.ctc,
-        "profession": u.profession,
-        "experience": u.experience,
-        "company": u.company
-    } ))) 
-
+    // (StatusCode::OK, Json(json!({
+    //     "email": u.email, 
+    //     "name": u.name, 
+    //     "uuid": u.uuid,
+    //     "ctc": u.ctc,
+    //     "profession": u.profession,
+    //     "experience": u.experience,
+    //     "company": u.company
+    // } ))) 
+    (StatusCode::OK, Json(json!({ "succeeded":true, "errors": [] } ))) 
 
 }
 
