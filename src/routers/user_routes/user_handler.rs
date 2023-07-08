@@ -1,6 +1,6 @@
 use axum::{response::{IntoResponse}, http::StatusCode, Json, Extension};
 use entity::{user::{self, Model}, user_technology, technology};
-use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait};
+use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, LoaderTrait};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
@@ -30,7 +30,8 @@ pub async fn update(
     Json(user_data): Json<UserSubDetails>
 ) -> impl IntoResponse {
 
-    let mut u: user::ActiveModel = user::Entity::find_by_id(user.id).one(&conn).await.unwrap().unwrap().into();
+    let mut u: user::ActiveModel = user::Entity::find_by_id(user.id).one(&conn).await
+    .unwrap().unwrap().into();
 
     u.company = Set(user_data.company);
 
@@ -102,5 +103,26 @@ pub async fn user(Extension(user): Extension<Model>) -> impl IntoResponse{
     };
 
     (StatusCode::OK,Json(data))
+
+}
+
+pub async fn user_tech(
+    Extension(conn): Extension<DatabaseConnection>, 
+    Extension(user): Extension<Model>
+) -> impl IntoResponse{
+
+    let _res = user_technology::Entity::find().filter(user_technology::Column::UserId.eq(user.id)).all(&conn).await.unwrap();
+    let res: Vec<TechnologyResponse>= _res.load_one(technology::Entity, &conn).await.unwrap()
+    .into_iter()
+    .map(|item| -> TechnologyResponse { 
+        let temp = item.as_ref().unwrap();
+        TechnologyResponse { 
+            uuid: temp.uuid, 
+            title: temp.title.clone(),
+            normalized_title: temp.normalized_title.clone()
+        } 
+    }).collect();
+    
+    (StatusCode::OK,Json(res))
 
 }
