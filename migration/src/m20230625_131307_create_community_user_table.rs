@@ -22,8 +22,13 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(CommunityUser::UserId).integer().not_null())
+                    .col(ColumnDef::new(CommunityUser::Caption1).integer())
+                    .col(ColumnDef::new(CommunityUser::Caption2).integer())
+                    .col(ColumnDef::new(CommunityUser::Caption3).integer())
+                    .col(ColumnDef::new(CommunityUser::Caption4).integer())
+                    .col(ColumnDef::new(CommunityUser::Caption5).integer())
                     .col(ColumnDef::new(CommunityUser::CommunityId).integer().not_null())
-                    .col(ColumnDef::new(CommunityUser::Type).string().not_null())
+                    .col(ColumnDef::new(CommunityUser::Type).string())
                     .col(ColumnDef::new(CommunityUser::CreatedAt).date_time().not_null())
                     .to_owned(),
             )
@@ -47,5 +52,10 @@ enum CommunityUser {
     UserId,
     CommunityId,
     Type,
+    Caption1,
+    Caption2,
+    Caption3,
+    Caption4,
+    Caption5,
     CreatedAt
 }

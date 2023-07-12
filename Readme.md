@@ -36,3 +36,11 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githu
 sudo apt update
 sudo apt install gh
 gh auth login
+
+# Run Backend
+cargo run -- daemon --registry-watcher=disabled
+
+# Run PG Admin
+cd Profolio-rust/environments/
+source my_env/bin/activate
+gunicorn --bind unix:/tmp/pgadmin4.sock --workers=1 --threads=25 --chdir ~/Profolio-rust/environments/my_env/lib/python3.6/site-packages/pgadmin4 pgAdmin4:app
