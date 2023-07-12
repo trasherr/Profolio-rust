@@ -2,6 +2,7 @@
 
 pub use super::community::Entity as Community;
 pub use super::community_user::Entity as CommunityUser;
+pub use super::leagues::Entity as Leagues;
 pub use super::technology::Entity as Technology;
 pub use super::user::Entity as User;
 pub use super::user_technology::Entity as UserTechnology;

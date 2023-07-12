@@ -2,17 +2,15 @@
 
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-#[sea_orm(table_name = "community")]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[sea_orm(table_name = "leagues")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub uuid: Uuid,
-    pub tech_id: i32,
-    #[sea_orm(column_type = "Double")]
-    pub ctc_range: f64,
     pub title: String,
-    pub description: Option<String>,
+    pub ctc_lower: i32,
+    pub ctc_upper: i32,
+    pub size: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
