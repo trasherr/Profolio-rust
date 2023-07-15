@@ -12,7 +12,14 @@ use crate::models::review_model::ReviewSoltModel;
 
 #[derive(Serialize,Deserialize)]
 pub struct CreateSlot{
-    pub slot_time: DateTime<Utc>,
+    slot_time: DateTime<Utc>,
+}
+
+
+#[derive(Serialize,Deserialize)]
+pub struct ReviewPostMeet{
+    ratting: i32,
+    desc: String,
 }
 
 
@@ -30,7 +37,7 @@ pub async fn get_caption_slots(
     (StatusCode::OK,Json(slots))
 }
 
-pub async fn get_slots(
+pub async fn get_review(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(user): Extension<Model>,
     // Path(caption_id): Path<Uuid>
@@ -54,10 +61,10 @@ pub async fn get_slots(
 pub async fn book_slot(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(user): Extension<Model>,
-    Path(slot_id): Path<(i32)>
+    Path(uuid): Path<Uuid>
 ) -> impl IntoResponse{
 
-    let slot = review_slot::Entity::find_by_id(slot_id).one(&conn).await.unwrap();
+    let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await.unwrap();
     let mut update_slot: review_slot::ActiveModel = slot.unwrap().into();
     update_slot.user_id = Set(Some(user.id));
     let res = update_slot.update(&conn).await
@@ -86,6 +93,7 @@ pub async fn create_slot(
 
 }
 
+
 pub async fn get_slot(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(user): Extension<Model>,
@@ -104,3 +112,30 @@ pub async fn get_slot(
     (StatusCode::UNAUTHORIZED, Json(json!({ "error": "Unauthorised User" })))
 }
 
+
+pub async fn save_review(
+    Extension(conn): Extension<DatabaseConnection>, 
+    Extension(user): Extension<Model>,
+    Path(uuid): Path<Uuid>,
+    Json(reviewRes): Json<ReviewPostMeet>
+) -> impl IntoResponse{
+
+    let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await.unwrap().map(|item| ReviewSoltModel {
+        id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id
+    }).unwrap();
+
+    if slot.caption_id != user.id {
+        return (StatusCode::UNAUTHORIZED, Json(json!({ "succeeded": false, "error":[ "Unauthorised User"] })))
+    }
+
+
+    let mut usr: user::ActiveModel = user.into();
+
+    usr.total_rating = Set(usr.total_rating.unwrap() + reviewRes.ratting);
+    usr.total_reviews = Set(usr.total_reviews.unwrap() + 1);
+
+    usr.update(&conn).await.unwrap();
+
+    return (StatusCode::OK,Json(json!({ "succeeded": true, "error":[ ] })))
+
+}

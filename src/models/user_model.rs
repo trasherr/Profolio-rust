@@ -13,7 +13,6 @@ pub struct UserModel{
     pub profession: Option<String>,
     pub experience: i32,
     pub company: Option<String>,
-
     pub uuid: Uuid,
     pub linkedin:Option<String>,
     pub github: Option<String>,

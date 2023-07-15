@@ -2,8 +2,7 @@ use axum::{ routing::get , Router, http::Method };
 use tower_http::cors::{Any,CorsLayer};
 
 mod home_handler;
-
-// use crate routes::
+use crate::utils::config;
 
 pub fn home_routes() -> Router {
     
@@ -12,7 +11,7 @@ pub fn home_routes() -> Router {
     .allow_origin(Any);
 
     Router::new()
-    .route("/tech",get(home_handler::get_tech))
+    .route(&config::endpoint("/home/tech"),get(home_handler::get_tech))
     .layer(cors)
 }
 

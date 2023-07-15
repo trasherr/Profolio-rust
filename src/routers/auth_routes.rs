@@ -2,8 +2,7 @@ use axum::{ routing::{post}, Router, http::Method };
 use tower_http::cors::{Any,CorsLayer};
 
 mod auth_handler;
-
-// use crate routes::
+use crate::utils::config;
 
 pub fn auth_router() -> Router {
 
@@ -13,8 +12,8 @@ pub fn auth_router() -> Router {
     .allow_origin(Any);
 
     Router::new()
-    .route("/register",post(auth_handler::register))
-    .route("/login",post(auth_handler::login))
+    .route(&config::endpoint("/auth/register"),post(auth_handler::register))
+    .route(&config::endpoint("/auth/login"),post(auth_handler::login))
     .layer(cors)
 }
 
