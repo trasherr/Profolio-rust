@@ -4,6 +4,7 @@ use uuid::Uuid;
 
 #[derive(Deserialize, Serialize)]
 pub struct UserModel{
+    pub id: i32,
     pub email: String,
     pub name: String,
     pub phone: String,

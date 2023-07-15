@@ -1,5 +1,5 @@
-use axum::{response::{IntoResponse}, http::StatusCode, Json, Extension};
-use entity::{user::{self, Model}, user_technology, technology};
+use axum::{response::{IntoResponse}, http::StatusCode, Json, Extension, extract::Path};
+use entity::{user::{self, Model}, user_technology, technology, review_slot};
 use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, LoaderTrait};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -87,6 +87,7 @@ pub async fn add_tech(
 pub async fn user(Extension(user): Extension<Model>) -> impl IntoResponse{
 
     let data = UserModel {
+        id: user.id,
         name: user.name,
         email: user.email,
         phone: user.phone,

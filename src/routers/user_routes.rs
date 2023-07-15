@@ -3,7 +3,7 @@ use tower_http::cors::{Any,CorsLayer};
 
 mod user_handler;
 mod comunity_handler;
-
+mod review_handler;
 // use crate routes::
 
 pub fn user_router() -> Router {

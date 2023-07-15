@@ -1,6 +1,6 @@
 use chrono::Utc;
 use entity::{user, leagues, community, community_user, technology};
-use sea_orm::{ Set, ActiveModelTrait, DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, QueryOrder, PaginatorTrait};
+use sea_orm::{ Set, ActiveModelTrait, DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, QueryOrder, PaginatorTrait, Condition};
 
 use uuid::Uuid;
 
@@ -17,6 +17,10 @@ use uuid::Uuid;
 pub async fn create_leaderboard(conn: &DatabaseConnection) {
 
    
+
+    community::Entity::delete_many().exec(conn).await.unwrap();
+    community_user::Entity::delete_many().exec(conn).await.unwrap();
+
     for techs in technology::Entity::find().all(conn).await.unwrap(){
 
         let leag = leagues::Entity::find().all(conn).await.unwrap();
@@ -25,7 +29,11 @@ pub async fn create_leaderboard(conn: &DatabaseConnection) {
         for league_item in leag {
     
             let mut users = user::Entity::find()
-            .filter(user::Column::Ctc.between(league_item.ctc_lower, league_item.ctc_upper))
+            .filter(
+                Condition::all()
+                .add(user::Column::Ctc.between(league_item.ctc_lower, league_item.ctc_upper))
+                .add(user::Column::TechId.eq(techs.id))
+            )
             .order_by_desc(user::Column::Ctc).paginate(conn, league_item.size as u64);
     
             //+++++++++++++++++++++++

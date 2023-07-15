@@ -35,6 +35,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::Profession).string())
                     .col(ColumnDef::new(User::Ctc).integer().default(0).not_null())
                     .col(ColumnDef::new(User::Experience).integer().default(0).not_null())
+                    .col(ColumnDef::new(User::Rating).integer().default(0).not_null())
                     .col(ColumnDef::new(User::TechId).integer())
                     .col(ColumnDef::new(User::Company).string())
                     .col(ColumnDef::new(User::Linkedin).string())
@@ -70,6 +71,7 @@ pub enum User {
     Ctc,
     Profession,
     Experience,
+    Rating,
     Company,
     Linkedin,
     Github,

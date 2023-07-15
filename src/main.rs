@@ -6,22 +6,6 @@ use utils::guard;
 use std::env;
 
 use axum::{Router, Extension, middleware};
-
-
-// pub use self::error::{Error, Result};
-// use crate::ctx::Ctx;
-// use crate::log::log_request;
-// use crate::model::ModelController;
-// use axum::extract::{Path, Query};
-// use axum::http::{Method, Uri};
-// use axum::response::{Html, IntoResponse, Response};
-// use axum::routing::{get, get_service};
-// use serde::Deserialize;
-// use serde_json::json;
-// use std::net::SocketAddr;
-// use tower_cookies::CookieManagerLayer;
-// // use tower_http::services::ServeDir;
-// use uuid::Uuid;
 use sea_orm::{Database, DatabaseConnection};
 
 
@@ -44,15 +28,16 @@ async fn main() {
   
     sched.add(Job::new_async("0 0 1 * * Sun",  |_uuid, _l| Box::pin(async{
 
+        println!("Cron Each Sunday 1 am");
+
         let conn_str = env::var("DATABASE_URL").expect("No Connection");
         let conn1 = Database::connect(conn_str).await.expect("Database connection failed");
         utils::crons::create_leaderboard(&conn1).await;
 
         conn1.close().await.unwrap();
-
-        ()
     })).unwrap()).await.unwrap();
-
+   
+    sched.start().await.unwrap();
     //+++++++++++++++++++++++++++++++++++++++++++++++
     
     server(conn).await;

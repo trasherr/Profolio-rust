@@ -18,6 +18,7 @@ pub struct Model {
     pub profession: Option<String>,
     pub ctc: i32,
     pub experience: i32,
+    pub rating: i32,
     pub tech_id: Option<i32>,
     pub company: Option<String>,
     pub linkedin: Option<String>,
