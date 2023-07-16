@@ -19,6 +19,35 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::community::Entity",
+        from = "Column::CommunityId",
+        to = "super::community::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Community,
+    #[sea_orm(
+        belongs_to = "super::user::Entity",
+        from = "Column::UserId",
+        to = "super::user::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    User,
+}
+
+impl Related<super::community::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Community.def()
+    }
+}
+
+impl Related<super::user::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::User.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

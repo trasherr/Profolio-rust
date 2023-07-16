@@ -1,4 +1,6 @@
-use sea_orm_migration::prelude::*;
+use sea_orm_migration::{prelude::*, sea_orm::EnumIter};
+
+use crate::{m20220101_000001_create_table::User, m20230625_113658_create_community_table::Community};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -30,6 +32,9 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(CommunityUser::CommunityId).integer().not_null())
                     .col(ColumnDef::new(CommunityUser::Type).string())
                     .col(ColumnDef::new(CommunityUser::CreatedAt).date_time().not_null())
+                    .foreign_key(ForeignKey::create().name("fk-user_community_user-user-id").from(CommunityUser::Table,CommunityUser::UserId).to(User::Table, User::Id))
+                    .foreign_key(ForeignKey::create().name("fk-user_community-community-id").from(CommunityUser::Table,CommunityUser::CommunityId).to(Community::Table, Community::Id))
+
                     .to_owned(),
             )
             .await
