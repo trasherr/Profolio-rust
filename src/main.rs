@@ -24,20 +24,20 @@ async fn main() {
 
     //+++++++++++++++++++++++++++++++++++++++
 
-    let sched = JobScheduler::new().await.unwrap();
+    // let sched = JobScheduler::new().await.unwrap();
   
-    sched.add(Job::new_async("0 0 1 * * Sun",  |_uuid, _l| Box::pin(async{
+    // sched.add(Job::new_async("0 0 1 * * Sun",  |_uuid, _l| Box::pin(async{
 
-        println!("Cron Each Sunday 1 am");
+    //     println!("Cron Each Sunday 1 am");
 
-        let conn_str = env::var("DATABASE_URL").expect("No Connection");
-        let conn1 = Database::connect(conn_str).await.expect("Database connection failed");
-        utils::crons::create_leaderboard(&conn1).await;
+    //     let conn_str = env::var("DATABASE_URL").expect("No Connection");
+    //     let conn1 = Database::connect(conn_str).await.expect("Database connection failed");
+    //     utils::crons::create_leaderboard(&conn1).await;
 
-        conn1.close().await.unwrap();
-    })).unwrap()).await.unwrap();
+    //     conn1.close().await.unwrap();
+    // })).unwrap()).await.unwrap();
    
-    sched.start().await.unwrap();
+    // sched.start().await.unwrap();
     //+++++++++++++++++++++++++++++++++++++++++++++++
     
     server(conn).await;

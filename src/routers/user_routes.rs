@@ -4,6 +4,7 @@ use tower_http::cors::{Any,CorsLayer};
 mod user_handler;
 mod comunity_handler;
 mod review_handler;
+mod roadmap_handler;
 use crate::utils::config;
 
 pub fn user_router() -> Router {
@@ -18,15 +19,24 @@ pub fn user_router() -> Router {
     .route(&config::endpoint("/user"),post(user_handler::update))
     .route(&config::endpoint("/user/tech"),post(user_handler::add_tech))
     .route(&config::endpoint("/user/tech"),get(user_handler::user_tech))
+
+    //slots and review routes
     .route(&config::endpoint("/user/reviews"),get(review_handler::get_review))
     .route(&config::endpoint("/user/slots/caption/:caption_id"),get(review_handler::get_caption_slots))
     .route(&config::endpoint("/user/slot/:uuid"),get(review_handler::get_slot))
     .route(&config::endpoint("/user/slot/:uuid/book"),get(review_handler::book_slot))
     .route(&config::endpoint("/user/slot/create"),post(review_handler::create_slot))
     .route(&config::endpoint("/user/slot/:uuid/rate"),post(review_handler::save_review))
-    // .route("/user/community",post(comunity_handler::create))
+
+    //roadmap routes
+    .route(&config::endpoint("/user/roadmap"),post(roadmap_handler::roadmap_post))
+    .route(&config::endpoint("/user/roadmap"),get(roadmap_handler::roadmap_get))
+
+    // community routes
+    // .route("/user/community",get(comunity_handler::community))
     // .route("/user/community/:uuid",put(comunity_handler::update))
-    // .route("/login",post(auth_handler::login))
+
+
     .layer(cors)
 }
 

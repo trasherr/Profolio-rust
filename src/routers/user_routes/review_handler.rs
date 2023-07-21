@@ -109,7 +109,8 @@ pub async fn get_slot(
         return (StatusCode::OK,Json(json!(slot)))
     }
 
-    (StatusCode::UNAUTHORIZED, Json(json!({ "error": "Unauthorised User" })))
+    (StatusCode::UNAUTHORIZED, Json(json!({ "succeeded": false, "error":[ "Unauthorised User"] }
+)))
 }
 
 

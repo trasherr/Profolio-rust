@@ -12,6 +12,9 @@ path = "src/lib.rs"
 entity = { path = "../entity" }
 async-std = { version = "1", features = ["attributes", "tokio1"] }
 uuid = { version = "1.3.4", features = ["v4"] }
+fake = { version = "2.6", features=['derive']}
+rand = "0.8"
+sha2 = "0.10"
 
 [dependencies.sea-orm-migration]
 version = "0.11.3"
