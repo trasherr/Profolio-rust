@@ -2,11 +2,11 @@
 
 pub mod prelude;
 
-pub mod community;
-pub mod community_user;
 pub mod leagues;
 pub mod review;
 pub mod review_slot;
+pub mod roadmap;
+pub mod roadmap_user;
 pub mod technology;
 pub mod user;
 pub mod user_technology;

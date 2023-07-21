@@ -2,8 +2,8 @@
 curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh
 source $HOME/.cargo/env
 rustc --version
-sudo apt update
-sudo apt upgrade
+sudo apt-get update
+sudo apt-get upgrade
 sudo apt install build-essential
 
 # also install
@@ -40,7 +40,42 @@ gh auth login
 # Run Backend
 cargo run -- daemon --registry-watcher=disabled
 
-# Run PG Admin
-cd Profolio-rust/environments/
+# Install PGAdmin
+sudo apt install libgmp3-dev libpq-dev
+sudo mkdir -p /var/lib/pgadmin4/sessions
+sudo mkdir /var/lib/pgadmin4/storage
+sudo mkdir /var/log/pgadmin4
+sudo chown -R ubuntu:ubuntu /var/lib/pgadmin4
+sudo chown -R ubuntu:ubuntu /var/log/pgadmin4
+
+sudo apt install -y python3-pip
+sudo apt install -y python3-venv
+
+mkidr environments
+cd environments/
+python3 -m venv my_env
 source my_env/bin/activate
+
+python -m pip install -U pip
+python -m pip install pgadmin4==6.10
+python -m pip install gunicorn
+
+# Setup PgAdmin
+nano my_env/lib/python3.10/site-packages/pgadmin4/config_local.py 
+
+```
+LOG_FILE = '/var/log/pgadmin4/pgadmin4.log'
+SQLITE_PATH = '/var/lib/pgadmin4/pgadmin4.db'
+SESSION_DB_PATH = '/var/lib/pgadmin4/sessions'
+STORAGE_DIR = '/var/lib/pgadmin4/storage'
+SERVER_MODE = True
+AZURE_CREDENTIAL_CACHE_DIR =  '/var/lib/azurecredentialcache'
+
+```
+sudo mkdir /var/lib/azurecredentialcache 
+chown -R ubuntu:ubuntu /var/lib/azurecredentialcache
+python my_env/lib/python3.10/site-packages/pgadmin4/setup.py
+
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
+# Run PG Admin
 gunicorn --bind unix:/tmp/pgadmin4.sock --workers=1 --threads=25 --chdir ~/Profolio-rust/environments/my_env/lib/python3.6/site-packages/pgadmin4 pgAdmin4:app

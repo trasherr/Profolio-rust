@@ -1,5 +1,5 @@
-use axum::{response::{IntoResponse}, http::StatusCode, Json, Extension, extract::Path};
-use entity::{user::{self, Model}, user_technology, technology, review_slot};
+use axum::{response::IntoResponse, http::StatusCode, Json, Extension};
+use entity::{user::{self, Model}, user_technology, technology};
 use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, LoaderTrait};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -40,7 +40,8 @@ pub async fn update(
     u.profession = Set(user_data.profession);
     u.experience = Set(user_data.experience);
 
-    let u: user::Model = u.update(&conn).await.unwrap();
+    u.update(&conn).await.unwrap();
+    // let u: user::Model = u.update(&conn).await.unwrap();
     // (StatusCode::OK, Json(json!({
     //     "email": u.email, 
     //     "name": u.name, 

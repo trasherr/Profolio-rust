@@ -20,7 +20,6 @@ pub struct Model {
     pub experience: i32,
     pub total_rating: i32,
     pub total_reviews: i32,
-    pub tech_id: Option<i32>,
     pub company: Option<String>,
     pub linkedin: Option<String>,
     pub github: Option<String>,
@@ -29,15 +28,15 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::community_user::Entity")]
-    CommunityUser,
+    #[sea_orm(has_many = "super::roadmap_user::Entity")]
+    RoadmapUser,
     #[sea_orm(has_many = "super::user_technology::Entity")]
     UserTechnology,
 }
 
-impl Related<super::community_user::Entity> for Entity {
+impl Related<super::roadmap_user::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::CommunityUser.def()
+        Relation::RoadmapUser.def()
     }
 }
 
