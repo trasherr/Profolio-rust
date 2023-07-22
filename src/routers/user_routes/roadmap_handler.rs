@@ -1,14 +1,14 @@
 use axum::{Extension, Json, http::StatusCode, response::IntoResponse};
 use chrono::Utc;
 use entity::{user::{Model, self}, leagues, roadmap, roadmap_user};
-use migration::{Expr, Alias};
-use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, Condition, QueryOrder, Set, ActiveModelTrait, QuerySelect, JoinType, RelationTrait, Statement, ConnectionTrait, DatabaseBackend, DbBackend, QueryTrait, Value};
-use serde::{Deserialize, Serialize};
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, Condition, QueryOrder, Set, ActiveModelTrait };
+use serde::Deserialize;
 use serde_json::json;
 use uuid::Uuid;
 use rand::Rng;
 
-use crate::models::{roadmap_model::{RoadmapModel, LevelModel, LevelUserModel}, user_model::UserModel};
+use crate::models::roadmap_model::{RoadmapModel, LevelModel };
+use crate::models::user_model::UserMicroModel;
 
 #[derive(Deserialize)]
 pub struct RoadmapDetails{
@@ -26,7 +26,9 @@ pub async fn roadmap_post(
     let target_model = user::Entity::find().filter(user::Column::Uuid.eq(data.target_uuid)).one(&conn).await.unwrap().unwrap();
 
     let league = leagues::Entity::find().filter(
-        leagues::Column::CtcLower.lt(target_model.ctc)
+        Condition::all()
+        .add(leagues::Column::CtcLower.lt(target_model.ctc))
+        .add(leagues::Column::CtcLower.gt(user.ctc))       
     ).order_by_asc(leagues::Column::CtcLower).all(&conn).await.unwrap();
 
     //create path
@@ -89,43 +91,44 @@ pub async fn roadmap_post(
 pub async fn roadmap_get(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(user): Extension<Model>
-)-> impl IntoResponse{
+)-> Result<Json<RoadmapModel>, StatusCode>{
 
 
 
-    let roadmap_model = roadmap::Entity::find().filter(roadmap::Column::UserId.eq(user.id))
-    .one(&conn).await.unwrap().unwrap();
+    let roadmap_model = match roadmap::Entity::find().filter(roadmap::Column::UserId.eq(user.id))
+        .one(&conn).await {
+        Ok(it) => it,
+        Err(_err) => return Err(StatusCode::NOT_FOUND),
+    }.unwrap();
 
     let roadmap_user_models: Vec<LevelModel> = roadmap_user::Entity::find().filter(roadmap_user::Column::RoadmapId.eq(roadmap_model.id))
     .find_with_related(user::Entity)
     .all(&conn).await.unwrap().into_iter()
     .map(|item| {
 
-        let temp: Vec<LevelUserModel> = item.1
-        .into_iter().map(|item2| LevelUserModel { 
+        let temp: Vec<UserMicroModel> = item.1
+        .into_iter().map(|item2| UserMicroModel { 
             name: item2.name.to_owned(), 
             company: item2.company.to_owned(), 
             ctc: item2.ctc, 
             uuid: item2.uuid  
         }).collect();
 
-        return LevelModel{
+        LevelModel{
             id: item.0.id,
             level: item.0.level,
             user: temp[0].clone()
         }
     }).collect();
-
+    
     let data = RoadmapModel{
-        id: roadmap_model.id,
-        uuid: roadmap_model.uuid,
-        levels: roadmap_user_models,
-        target: roadmap_model.target_id,
-        created_at: roadmap_model.created_at,
-        modified_at: roadmap_model.modified_at,
-    };
-
+            id: roadmap_model.id,
+            uuid: roadmap_model.uuid,
+            levels: roadmap_user_models,
+            target: roadmap_model.target_id,
+            created_at: roadmap_model.created_at,
+            modified_at: roadmap_model.modified_at,
+        };
+        Ok(Json(data))
     
-    
-    (StatusCode::OK,Json(json!({ "succeeded":true, "errors": [], "data":data  })))
 }

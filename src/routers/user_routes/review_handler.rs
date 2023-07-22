@@ -2,13 +2,13 @@
 use axum::{response::IntoResponse, http::StatusCode, Json, Extension, extract::Path};
 use chrono::{DateTime, Utc};
 use entity::{user::{self, Model}, review_slot};
-use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition };
+use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition, LoaderTrait };
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::models::review_model::ReviewSoltModel;
+use crate::models::{review_model::ReviewSoltModel, user_model::UserMicroModel};
 
 #[derive(Serialize,Deserialize)]
 pub struct CreateSlot{
@@ -31,7 +31,7 @@ pub async fn get_caption_slots(
     let cap = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await.unwrap().unwrap();
 
     let slots: Vec<ReviewSoltModel> = review_slot::Entity::find().filter(review_slot::Column::CaptionId.eq(cap.id)).all(&conn).await.unwrap().into_iter().map(|item| ReviewSoltModel {
-        id: item.id,uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id
+        id: item.id,uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id,  caption: None
     }).collect();
 
     (StatusCode::OK,Json(slots))
@@ -44,17 +44,28 @@ pub async fn get_review(
 ) -> impl IntoResponse{
 
     // let cap = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await.unwrap().unwrap();
+    let slots: Vec<ReviewSoltModel>= review_slot::Entity::find().filter(review_slot::Column::UserId.eq(user.id))
+    .find_with_related(user::Entity)
+    .all(&conn).await.unwrap()
+    .into_iter()
+    .map(|item| 
+        {
+            let temp: UserMicroModel = item.1.first()
+            .map(|item2| UserMicroModel { name: item2.name.to_owned(), company: item2.company.to_owned(), ctc: item2.ctc, uuid: item2.uuid }).unwrap();
 
-    let slots: Vec<ReviewSoltModel> = review_slot::Entity::find().filter(
-        Condition::any()
-        .add(review_slot::Column::CaptionId.eq(user.id))
-        .add(review_slot::Column::UserId.eq(user.id))
-    ).all(&conn).await.unwrap().into_iter()
-    .map(|item| ReviewSoltModel {
-        id: item.id,uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id
-    }).collect();
+            ReviewSoltModel {
+                id: item.0.id,
+                uuid: item.0.uuid, 
+                user_id: item.0.user_id,
+                slot_time: item.0.slot_time, 
+                caption_id: item.0.caption_id, 
+                caption: Some(temp),
+            }
+        }
 
-    (StatusCode::OK,Json(slots))
+    ).collect();
+    
+    (StatusCode::OK,Json(json!(slots)))
 }
 
 
@@ -68,7 +79,14 @@ pub async fn book_slot(
     let mut update_slot: review_slot::ActiveModel = slot.unwrap().into();
     update_slot.user_id = Set(Some(user.id));
     let res = update_slot.update(&conn).await
-    .map(|item| ReviewSoltModel { id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id }).unwrap();
+    .map(|item| ReviewSoltModel { 
+        id: item.id, 
+        uuid: item.uuid, 
+        user_id: item.user_id, 
+        slot_time: item.slot_time, 
+        caption_id: item.caption_id,
+        caption: None
+    }).unwrap();
 
     (StatusCode::OK,Json(res))
 
@@ -89,7 +107,17 @@ pub async fn create_slot(
         ..Default::default()
     }.insert(&conn).await;
 
-    (StatusCode::OK,Json(res.map(|item| ReviewSoltModel { id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id }).unwrap()))
+    (
+        StatusCode::OK, 
+        Json(res.map(|item| ReviewSoltModel {
+            id: item.id, 
+            uuid: item.uuid, 
+            user_id: item.user_id, 
+            slot_time: item.slot_time, 
+            caption_id: item.caption_id,
+            caption: None
+        }).unwrap())
+    )
 
 }
 
@@ -101,7 +129,7 @@ pub async fn get_slot(
 ) -> impl IntoResponse{
 
     let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await.unwrap().map(|item| ReviewSoltModel {
-        id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id
+        id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id, caption: None
     }).unwrap();
 
     if slot.caption_id == user.id || slot.user_id == Some(user.id){
@@ -118,11 +146,11 @@ pub async fn save_review(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(user): Extension<Model>,
     Path(uuid): Path<Uuid>,
-    Json(reviewRes): Json<ReviewPostMeet>
+    Json(review_res): Json<ReviewPostMeet>
 ) -> impl IntoResponse{
 
     let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await.unwrap().map(|item| ReviewSoltModel {
-        id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id
+        id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id, caption: None
     }).unwrap();
 
     if slot.caption_id != user.id {
@@ -132,7 +160,7 @@ pub async fn save_review(
 
     let mut usr: user::ActiveModel = user.into();
 
-    usr.total_rating = Set(usr.total_rating.unwrap() + reviewRes.ratting);
+    usr.total_rating = Set(usr.total_rating.unwrap() + review_res.ratting);
     usr.total_reviews = Set(usr.total_reviews.unwrap() + 1);
 
     usr.update(&conn).await.unwrap();

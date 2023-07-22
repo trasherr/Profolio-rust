@@ -1,8 +1,8 @@
-use chrono::{DateTime, Utc, NaiveDateTime};
+use chrono::NaiveDateTime;
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
-use super::user_model::UserModel;
+use super::user_model::UserMicroModel;
 
 
 #[derive(Serialize,Deserialize)]
@@ -21,15 +21,6 @@ pub struct RoadmapModel{
 pub struct LevelModel{
     pub id: i32,
     pub level: i32,
-    pub user: LevelUserModel,
-    // pub user_uuid: Uuid
-}
-
-#[derive(Serialize,Deserialize,Clone)]
-pub struct LevelUserModel{
-    pub name: String,
-    pub company: Option<String>,
-    pub ctc: i32,
-    pub uuid: Uuid,
+    pub user: UserMicroModel,
     // pub user_uuid: Uuid
 }

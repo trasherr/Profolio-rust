@@ -1,5 +1,7 @@
 use sea_orm_migration::prelude::*;
 
+use crate::m20220101_000001_create_table::User;
+
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
@@ -25,6 +27,8 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Review::CaptionId).integer().not_null())
                     .col(ColumnDef::new(Review::Rating).integer().not_null())
                     .col(ColumnDef::new(Review::Text).string())
+                    // .foreign_key(ForeignKey::create().name("fk-review-user-id").from(Review::Table,Review::UserId).to(User::Table, User::Id))
+                    .foreign_key(ForeignKey::create().name("fk-review_caption-target-id").from(Review::Table,Review::CaptionId).to(User::Table, User::Id))
                     .to_owned(),
             )
             .await

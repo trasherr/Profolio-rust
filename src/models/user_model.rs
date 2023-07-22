@@ -18,3 +18,12 @@ pub struct UserModel{
     pub github: Option<String>,
     pub others: Option<String>
 }
+
+#[derive(Serialize,Deserialize,Clone)]
+pub struct UserMicroModel{
+    pub name: String,
+    pub company: Option<String>,
+    pub ctc: i32,
+    pub uuid: Uuid,
+    // pub user_uuid: Uuid
+}

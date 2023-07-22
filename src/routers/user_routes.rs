@@ -21,7 +21,7 @@ pub fn user_router() -> Router {
     .route(&config::endpoint("/user/tech"),get(user_handler::user_tech))
 
     //slots and review routes
-    .route(&config::endpoint("/user/reviews"),get(review_handler::get_review))
+    .route(&config::endpoint("/user/meetings"),get(review_handler::get_review))
     .route(&config::endpoint("/user/slots/caption/:caption_id"),get(review_handler::get_caption_slots))
     .route(&config::endpoint("/user/slot/:uuid"),get(review_handler::get_slot))
     .route(&config::endpoint("/user/slot/:uuid/book"),get(review_handler::book_slot))

@@ -1,7 +1,7 @@
 
 use axum::{Extension, http::StatusCode, Json, response::IntoResponse};
 use entity::technology;
-use sea_orm::{EntityTrait, DatabaseConnection, QuerySelect};
+use sea_orm::{EntityTrait, DatabaseConnection };
 
 use crate::models::tech_model::TechModel;
 

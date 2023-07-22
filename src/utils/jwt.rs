@@ -3,7 +3,7 @@ extern crate dotenv;
 // use dotenv::dotenv;
 use std::env;
 
-use axum::{http::StatusCode, Error};
+use axum::http::StatusCode;
 use serde::{Serialize, Deserialize};
 use chrono::{Utc,Duration};
 use jsonwebtoken::{Header, EncodingKey, encode, decode, DecodingKey, Validation, TokenData};
