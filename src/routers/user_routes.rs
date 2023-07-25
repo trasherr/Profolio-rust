@@ -19,6 +19,14 @@ pub fn user_router() -> Router {
     .route(&config::endpoint("/user"),post(user_handler::update))
     .route(&config::endpoint("/user/tech"),post(user_handler::add_tech))
     .route(&config::endpoint("/user/tech"),get(user_handler::user_tech))
+    .route(&config::endpoint("/user/targets"),get(user_handler::user_tech))
+    .route(&config::endpoint("/user/targets/all"),get(user_handler::user_tech))
+    .route(&config::endpoint("/user/targets"),post(user_handler::get_target_post))
+
+
+    //roadmap routes
+    .route(&config::endpoint("/user/roadmap"),post(roadmap_handler::roadmap_post))
+    .route(&config::endpoint("/user/roadmap"),get(roadmap_handler::roadmap_get))
 
     //slots and review routes
     .route(&config::endpoint("/user/meetings"),get(review_handler::get_review))
@@ -27,15 +35,6 @@ pub fn user_router() -> Router {
     .route(&config::endpoint("/user/slot/:uuid/book"),get(review_handler::book_slot))
     .route(&config::endpoint("/user/slot/create"),post(review_handler::create_slot))
     .route(&config::endpoint("/user/slot/:uuid/rate"),post(review_handler::save_review))
-
-    //roadmap routes
-    .route(&config::endpoint("/user/roadmap"),post(roadmap_handler::roadmap_post))
-    .route(&config::endpoint("/user/roadmap"),get(roadmap_handler::roadmap_get))
-
-    // community routes
-    // .route("/user/community",get(comunity_handler::community))
-    // .route("/user/community/:uuid",put(comunity_handler::update))
-
 
     .layer(cors)
 }

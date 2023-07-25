@@ -1,10 +1,10 @@
-use axum::{response::IntoResponse, http::StatusCode, Json, Extension};
+use axum::{response::IntoResponse, http::StatusCode, Json, Extension, extract::Path };
 use entity::{user::{self, Model}, user_technology, technology};
-use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, LoaderTrait};
+use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, LoaderTrait, Condition};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
-use crate::models::user_model::UserModel;
+use crate::{models::user_model::{UserModel, UserMicroModel}, utils::api_error};
 
 #[derive(Deserialize)]
 pub struct UserSubDetails{
@@ -21,6 +21,15 @@ pub struct TechnologyResponse{
     uuid: Uuid,
     title: String,
     normalized_title: String,
+}
+
+
+#[derive(Deserialize,Serialize,Debug)]
+pub struct Filters{
+    lower_ctc: Option<i32>,
+    upper_ctc: Option<i32>,
+    custom_tech: Option<Vec<Uuid>>,
+    company: Option<String>
 }
 
 
@@ -126,5 +135,46 @@ pub async fn user_tech(
     }).collect();
     
     (StatusCode::OK,Json(res))
+
+}
+
+pub async fn get_target_post(
+    Extension(conn): Extension<DatabaseConnection>, 
+    // Extension(identity): Extension<Model>,
+    Json(filters): Json<Filters>
+
+) -> Result<Json<Vec<UserMicroModel>>, StatusCode>{
+
+    let mut condition = Condition::all();
+
+    if filters.company != None {
+        let s = filters.company.unwrap_or("".to_string());
+        condition = condition.add(user::Column::Company.like(&format!("%{}%",s)));
+    }
+
+    if filters.lower_ctc != None {
+        condition = condition.add(user::Column::Ctc.gte(filters.lower_ctc));
+    }
+
+    if filters.upper_ctc != None {
+        condition = condition.add(user::Column::Ctc.lte(filters.upper_ctc));
+    }
+
+    if filters.custom_tech != None {
+        let techs: Vec<i32> = technology::Entity::find().filter(technology::Column::Uuid.is_in(filters.custom_tech)).all(&conn).await.map_err(|_| api_error::E404() )?
+        .into_iter().map(|item| item.id).collect();
+
+        let target_ids: Vec<i32> = user_technology::Entity::find().filter(
+            Condition::all()
+            .add(user_technology::Column::TechnologyId.is_in(techs))
+        ).all(&conn).await.map_err(|_| api_error::E404() )?
+        .into_iter().map(|item| item.user_id).collect();
+
+        condition = condition.add(user::Column::Id.is_in(target_ids));
+    }
+
+    let users = user::Entity::find().filter(condition).all(&conn).await.map_err(|_| api_error::E404() )?
+    .into_iter().map(|item|  UserMicroModel { name: item.name, company: item.company, ctc: item.ctc, uuid: item.uuid }).collect();
+    Ok(Json(users))
 
 }

@@ -12,6 +12,7 @@ pub fn home_routes() -> Router {
 
     Router::new()
     .route(&config::endpoint("/home/tech"),get(home_handler::get_tech))
+
     .layer(cors)
 }
 

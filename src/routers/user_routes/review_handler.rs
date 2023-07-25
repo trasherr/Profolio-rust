@@ -2,7 +2,7 @@
 use axum::{response::IntoResponse, http::StatusCode, Json, Extension, extract::Path};
 use chrono::{DateTime, Utc};
 use entity::{user::{self, Model}, review_slot};
-use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition, LoaderTrait };
+use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait  };
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -39,12 +39,12 @@ pub async fn get_caption_slots(
 
 pub async fn get_review(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(user): Extension<Model>,
+    Extension(identity): Extension<Model>,
     // Path(caption_id): Path<Uuid>
 ) -> impl IntoResponse{
 
     // let cap = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await.unwrap().unwrap();
-    let slots: Vec<ReviewSoltModel>= review_slot::Entity::find().filter(review_slot::Column::UserId.eq(user.id))
+    let slots: Vec<ReviewSoltModel>= review_slot::Entity::find().filter(review_slot::Column::UserId.eq(identity.id))
     .find_with_related(user::Entity)
     .all(&conn).await.unwrap()
     .into_iter()
@@ -71,13 +71,13 @@ pub async fn get_review(
 
 pub async fn book_slot(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(user): Extension<Model>,
+    Extension(identity): Extension<Model>,
     Path(uuid): Path<Uuid>
 ) -> impl IntoResponse{
 
     let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await.unwrap();
     let mut update_slot: review_slot::ActiveModel = slot.unwrap().into();
-    update_slot.user_id = Set(Some(user.id));
+    update_slot.user_id = Set(Some(identity.id));
     let res = update_slot.update(&conn).await
     .map(|item| ReviewSoltModel { 
         id: item.id, 
@@ -95,13 +95,13 @@ pub async fn book_slot(
 
 pub async fn create_slot(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(user): Extension<Model>,
+    Extension(identity): Extension<Model>,
     Json(slot_data): Json<CreateSlot>
 ) -> impl IntoResponse{
 
 
     let res = review_slot::ActiveModel { 
-        caption_id: Set(user.id),
+        caption_id: Set(identity.id),
         slot_time: Set(slot_data.slot_time.naive_local()),
         uuid: Set(Uuid::new_v4()),
         ..Default::default()
@@ -124,7 +124,7 @@ pub async fn create_slot(
 
 pub async fn get_slot(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(user): Extension<Model>,
+    Extension(identity): Extension<Model>,
     Path(uuid): Path<Uuid>
 ) -> impl IntoResponse{
 
@@ -132,7 +132,7 @@ pub async fn get_slot(
         id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id, caption: None
     }).unwrap();
 
-    if slot.caption_id == user.id || slot.user_id == Some(user.id){
+    if slot.caption_id == identity.id || slot.user_id == Some(identity.id){
 
         return (StatusCode::OK,Json(json!(slot)))
     }
@@ -144,7 +144,7 @@ pub async fn get_slot(
 
 pub async fn save_review(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(user): Extension<Model>,
+    Extension(identity): Extension<Model>,
     Path(uuid): Path<Uuid>,
     Json(review_res): Json<ReviewPostMeet>
 ) -> impl IntoResponse{
@@ -153,12 +153,12 @@ pub async fn save_review(
         id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id, caption: None
     }).unwrap();
 
-    if slot.caption_id != user.id {
+    if slot.caption_id != identity.id {
         return (StatusCode::UNAUTHORIZED, Json(json!({ "succeeded": false, "error":[ "Unauthorised User"] })))
     }
 
 
-    let mut usr: user::ActiveModel = user.into();
+    let mut usr: user::ActiveModel = identity.into();
 
     usr.total_rating = Set(usr.total_rating.unwrap() + review_res.ratting);
     usr.total_reviews = Set(usr.total_reviews.unwrap() + 1);

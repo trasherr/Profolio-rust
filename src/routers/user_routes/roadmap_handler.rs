@@ -93,7 +93,7 @@ pub async fn roadmap_get(
     Extension(user): Extension<Model>
 )-> Result<Json<RoadmapModel>, StatusCode>{
 
-
+    return Err(StatusCode::NOT_FOUND);
 
     let roadmap_model = match roadmap::Entity::find().filter(roadmap::Column::UserId.eq(user.id))
         .one(&conn).await {
