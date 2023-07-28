@@ -11,7 +11,7 @@ use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 pub async fn guard<T>(mut request: Request<T>, next: Next<T>) -> Result<Response, StatusCode> {
 
     let token = request.headers().typed_get::<Authorization<Bearer>>().ok_or(StatusCode::UNAUTHORIZED)?.token().to_owned();
-    let claims = decode_jwt(token).unwrap().claims;
+    let claims = decode_jwt(token)?.claims;
 
     let db = request.extensions().get::<DatabaseConnection>().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
 

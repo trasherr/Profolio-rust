@@ -19,8 +19,8 @@ pub fn user_router() -> Router {
     .route(&config::endpoint("/user"),post(user_handler::update))
     .route(&config::endpoint("/user/tech"),post(user_handler::add_tech))
     .route(&config::endpoint("/user/tech"),get(user_handler::user_tech))
-    .route(&config::endpoint("/user/targets"),get(user_handler::user_tech))
-    .route(&config::endpoint("/user/targets/all"),get(user_handler::user_tech))
+    // .route(&config::endpoint("/user/targets"),get(user_handler::user_tech))
+    // .route(&config::endpoint("/user/targets/all"),get(user_handler::user_tech))
     .route(&config::endpoint("/user/targets"),post(user_handler::get_target_post))
 
 

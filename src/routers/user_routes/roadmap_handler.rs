@@ -2,15 +2,15 @@ use axum::{Extension, Json, http::StatusCode, response::IntoResponse};
 use chrono::Utc;
 use entity::{user::{Model, self}, leagues, roadmap, roadmap_user};
 use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, Condition, QueryOrder, Set, ActiveModelTrait };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
 use rand::Rng;
 
-use crate::models::roadmap_model::{RoadmapModel, LevelModel };
+use crate::{models::roadmap_model::{RoadmapModel, LevelModel }, utils::api_error};
 use crate::models::user_model::UserMicroModel;
 
-#[derive(Deserialize)]
+#[derive(Serialize,Deserialize)]
 pub struct RoadmapDetails{
    target_uuid: Uuid
 }
@@ -92,14 +92,19 @@ pub async fn roadmap_get(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(user): Extension<Model>
 )-> Result<Json<RoadmapModel>, StatusCode>{
-
-    return Err(StatusCode::NOT_FOUND);
-
+    
     let roadmap_model = match roadmap::Entity::find().filter(roadmap::Column::UserId.eq(user.id))
         .one(&conn).await {
-        Ok(it) => it,
-        Err(_err) => return Err(StatusCode::NOT_FOUND),
+        Ok(it) => { 
+            if it == None{
+                return Err(api_error::E404());
+            }
+            it
+         },
+        Err(_err) => return Err(api_error::E500()),
     }.unwrap();
+
+    
 
     let roadmap_user_models: Vec<LevelModel> = roadmap_user::Entity::find().filter(roadmap_user::Column::RoadmapId.eq(roadmap_model.id))
     .find_with_related(user::Entity)
