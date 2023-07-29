@@ -1,14 +1,13 @@
 
-use axum::{response::IntoResponse, http::StatusCode, Json, Extension, extract::Path};
+use axum::{http::StatusCode, Json, Extension, extract::Path };
 use chrono::{DateTime, Utc};
 use entity::{user::{self, Model}, review_slot};
-use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait  };
+use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition };
 
 use serde::{Deserialize, Serialize};
-use serde_json::json;
-use uuid::Uuid;
 
-use crate::models::{review_model::ReviewSoltModel, user_model::UserMicroModel};
+use uuid::Uuid;
+use crate::{models::{review_model::ReviewSoltModel, user_model::UserMicroModel}, utils::api_error::APIError};
 
 #[derive(Serialize,Deserialize)]
 pub struct CreateSlot{
@@ -22,31 +21,39 @@ pub struct ReviewPostMeet{
     desc: String,
 }
 
-
 pub async fn get_caption_slots(
     Extension(conn): Extension<DatabaseConnection>, 
     Path(caption_id): Path<Uuid>
-) -> impl IntoResponse{
+) -> Result<Json<Vec<ReviewSoltModel>>, APIError>{
 
-    let cap = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await.unwrap().unwrap();
+    let captain_model = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
 
-    let slots: Vec<ReviewSoltModel> = review_slot::Entity::find().filter(review_slot::Column::CaptionId.eq(cap.id)).all(&conn).await.unwrap().into_iter().map(|item| ReviewSoltModel {
+    if captain_model == None {
+        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
+    }
+    let captain = captain_model.unwrap();
+
+    let slots: Vec<ReviewSoltModel> = review_slot::Entity::find().filter(review_slot::Column::CaptionId.eq(captain.id)).all(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .into_iter().map(|item| ReviewSoltModel {
         id: item.id,uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id,  caption: None
     }).collect();
 
-    (StatusCode::OK,Json(slots))
+    Ok(Json(slots))
 }
 
 pub async fn get_review(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(identity): Extension<Model>,
     // Path(caption_id): Path<Uuid>
-) -> impl IntoResponse{
+) -> Result<Json<Vec<ReviewSoltModel>>,APIError>{
 
     // let cap = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await.unwrap().unwrap();
     let slots: Vec<ReviewSoltModel>= review_slot::Entity::find().filter(review_slot::Column::UserId.eq(identity.id))
     .find_with_related(user::Entity)
-    .all(&conn).await.unwrap()
+    .all(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
     .into_iter()
     .map(|item| 
         {
@@ -65,7 +72,7 @@ pub async fn get_review(
 
     ).collect();
     
-    (StatusCode::OK,Json(json!(slots)))
+    Ok(Json(slots))
 }
 
 
@@ -73,9 +80,15 @@ pub async fn book_slot(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(identity): Extension<Model>,
     Path(uuid): Path<Uuid>
-) -> impl IntoResponse{
+) -> Result<Json<ReviewSoltModel>, APIError>{
 
-    let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await.unwrap();
+    let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+
+    if slot == None {
+        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
+    }
+
     let mut update_slot: review_slot::ActiveModel = slot.unwrap().into();
     update_slot.user_id = Set(Some(identity.id));
     let res = update_slot.update(&conn).await
@@ -86,9 +99,11 @@ pub async fn book_slot(
         slot_time: item.slot_time, 
         caption_id: item.caption_id,
         caption: None
-    }).unwrap();
+    })
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
 
-    (StatusCode::OK,Json(res))
+
+    Ok(Json(res))
 
 
 }
@@ -97,7 +112,7 @@ pub async fn create_slot(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(identity): Extension<Model>,
     Json(slot_data): Json<CreateSlot>
-) -> impl IntoResponse{
+) -> Result<Json<ReviewSoltModel>,APIError>{
 
 
     let res = review_slot::ActiveModel { 
@@ -105,18 +120,18 @@ pub async fn create_slot(
         slot_time: Set(slot_data.slot_time.naive_local()),
         uuid: Set(Uuid::new_v4()),
         ..Default::default()
-    }.insert(&conn).await;
+    }.insert(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
 
-    (
-        StatusCode::OK, 
-        Json(res.map(|item| ReviewSoltModel {
-            id: item.id, 
-            uuid: item.uuid, 
-            user_id: item.user_id, 
-            slot_time: item.slot_time, 
-            caption_id: item.caption_id,
+    Ok(
+        Json( ReviewSoltModel {
+            id: res.id, 
+            uuid: res.uuid, 
+            user_id: res.user_id, 
+            slot_time: res.slot_time, 
+            caption_id: res.caption_id,
             caption: None
-        }).unwrap())
+        })
     )
 
 }
@@ -126,19 +141,36 @@ pub async fn get_slot(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(identity): Extension<Model>,
     Path(uuid): Path<Uuid>
-) -> impl IntoResponse{
+) -> Result<Json<ReviewSoltModel >,APIError>{
 
-    let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await.unwrap().map(|item| ReviewSoltModel {
-        id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id, caption: None
-    }).unwrap();
+    let slot_model = review_slot::Entity::find().filter(
+        Condition::all()
+        .add(review_slot::Column::Uuid.eq(uuid))
+        .add(
+            Condition::any()
+            .add(review_slot::Column::CaptionId.eq(identity.id))
+            .add(review_slot::Column::UserId.eq(identity.id))
+            )
+        ).one(&conn).await
+        .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+    
 
-    if slot.caption_id == identity.id || slot.user_id == Some(identity.id){
-
-        return (StatusCode::OK,Json(json!(slot)))
+    if slot_model == None {
+        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
     }
+    let slot = slot_model.unwrap();
 
-    (StatusCode::UNAUTHORIZED, Json(json!({ "succeeded": false, "error":[ "Unauthorised User"] }
-)))
+    return Ok(Json( 
+        ReviewSoltModel {
+            id: slot.id, 
+            uuid: slot.uuid, 
+            user_id: slot.user_id, 
+            slot_time: slot.slot_time, 
+            caption_id: slot.caption_id, 
+            caption: None
+        }
+    ));
+
 }
 
 
@@ -147,14 +179,28 @@ pub async fn save_review(
     Extension(identity): Extension<Model>,
     Path(uuid): Path<Uuid>,
     Json(review_res): Json<ReviewPostMeet>
-) -> impl IntoResponse{
+) -> Result<StatusCode,APIError>{
 
-    let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await.unwrap().map(|item| ReviewSoltModel {
-        id: item.id, uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id, caption: None
+    let slot = review_slot::Entity::find()
+    .filter(review_slot::Column::Uuid.eq(uuid))
+    .one(&conn)
+    .await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR })?
+    .map(|item| ReviewSoltModel {
+        id: item.id, 
+        uuid: item.uuid, 
+        user_id: item.user_id, 
+        slot_time: item.slot_time, 
+        caption_id: item.caption_id, 
+        caption: None
     }).unwrap();
 
     if slot.caption_id != identity.id {
-        return (StatusCode::UNAUTHORIZED, Json(json!({ "succeeded": false, "error":[ "Unauthorised User"] })))
+        let error = APIError { error_code: None,
+            message: "Unauthorised".to_string(),
+            status_code: StatusCode::UNAUTHORIZED
+        };
+        return Err(error);
     }
 
 
@@ -165,6 +211,6 @@ pub async fn save_review(
 
     usr.update(&conn).await.unwrap();
 
-    return (StatusCode::OK,Json(json!({ "succeeded": true, "error":[ ] })))
+    return Ok(StatusCode::OK);
 
 }
