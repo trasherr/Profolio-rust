@@ -1,4 +1,4 @@
-use axum::{ routing::{post}, Router, http::Method };
+use axum::{ routing::post, Router, http::Method };
 use tower_http::cors::{Any,CorsLayer};
 
 mod auth_handler;

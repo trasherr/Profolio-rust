@@ -114,6 +114,9 @@ pub async fn create_slot(
     Json(slot_data): Json<CreateSlot>
 ) -> Result<Json<ReviewSoltModel>,APIError>{
 
+    if !identity.is_caption {
+        return Err(APIError{ error_code: None, status_code: StatusCode::FORBIDDEN, message: "Not enough permissions".to_string() });
+    }
 
     let res = review_slot::ActiveModel { 
         caption_id: Set(identity.id),

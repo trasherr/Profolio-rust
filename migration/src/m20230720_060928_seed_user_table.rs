@@ -57,7 +57,7 @@ impl MigrationTrait for Migration {
 
         
 
-        for _ in 0..100{
+        for i in 0..100{
             let user = user::ActiveModel { 
                 name: Set(Name(EN).fake()),
                 uuid: Set(Uuid::new_v4()),
@@ -69,6 +69,8 @@ impl MigrationTrait for Migration {
                 company: Set(Some(CompanyName().fake())),
                 ctc: Set(rand::thread_rng().gen_range(3..20)),
                 profession: Set(Some(Profession().fake())),
+                is_caption: Set(i % 2 == 0),
+                is_caption_applied: Set(i % 2 == 0),
 
                 ..Default::default()
             

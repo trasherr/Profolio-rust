@@ -34,12 +34,12 @@ pub struct Filters{
 
 pub async fn update(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(user): Extension<Model>, 
+    Extension(identity): Extension<Model>, 
     Json(user_data): Json<UserSubDetails>
 ) -> Result<StatusCode, APIError> {
 
     
-    let mut u: user::ActiveModel = user::Entity::find_by_id(user.id)
+    let mut u: user::ActiveModel = user::Entity::find_by_id(identity.id)
     .one(&conn)
     .await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
@@ -71,7 +71,7 @@ pub async fn update(
 
 pub async fn add_tech(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(user): Extension<Model>, 
+    Extension(identity): Extension<Model>, 
     Json(technologies): Json<Vec<Uuid>>
 ) -> Result<StatusCode,APIError> {
 
@@ -85,7 +85,7 @@ pub async fn add_tech(
     let mut user_techs: Vec<user_technology::ActiveModel> = [].to_vec();
     for (_, item) in techs.into_iter().enumerate() {
         let temp: user_technology::ActiveModel = user_technology::ActiveModel { 
-            user_id: Set(user.id),
+            user_id: Set(identity.id),
             technology_id: Set(item.id),
             score: Set(1.0),
             ..Default::default()
@@ -100,23 +100,23 @@ pub async fn add_tech(
 }
 
 
-pub async fn user(Extension(user): Extension<Model>) -> Result<Json<UserModel>,APIError>{
+pub async fn user(Extension(identity): Extension<Model>) -> Result<Json<UserModel>,APIError>{
 
     let data = UserModel {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        phone_code: user.phone_code,
-        ctc: user.ctc,
-        profession: user.profession,
-        experience: user.experience,
-        company: user.company,
-
-        uuid: user.uuid,
-        linkedin: user.linkedin,
-        github: user.github,
-        others: user.others
+        id: identity.id,
+        name: identity.name,
+        email: identity.email,
+        phone: identity.phone,
+        phone_code: identity.phone_code,
+        ctc: identity.ctc,
+        profession: identity.profession,
+        experience: identity.experience,
+        company: identity.company,
+        is_caption: identity.is_caption,
+        uuid: identity.uuid,
+        linkedin: identity.linkedin,
+        github: identity.github,
+        others: identity.others
     };
 
     Ok(Json(data))
@@ -125,10 +125,10 @@ pub async fn user(Extension(user): Extension<Model>) -> Result<Json<UserModel>,A
 
 pub async fn user_tech(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(user): Extension<Model>
+    Extension(identity): Extension<Model>
 ) -> Result<Json<Vec<TechnologyResponse>>,APIError>{
 
-    let _res = user_technology::Entity::find().filter(user_technology::Column::UserId.eq(user.id)).all(&conn).await
+    let _res = user_technology::Entity::find().filter(user_technology::Column::UserId.eq(identity.id)).all(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
 
     let res: Vec<TechnologyResponse>= _res.load_one(technology::Entity, &conn).await
@@ -155,7 +155,7 @@ pub async fn get_target_post(
 
 ) -> Result<Json<Vec<UserMicroModel>>, APIError>{
 
-    let mut condition = Condition::all();
+    let mut condition = Condition::all().add(user::Column::IsCaption.eq(true));
 
     if filters.company != None {
         let s = filters.company.unwrap_or("".to_string());
@@ -181,10 +181,12 @@ pub async fn get_target_post(
         .into_iter().map(|item| item.id)
         .collect();
 
-        let target_ids: Vec<i32> = user_technology::Entity::find().filter(
+        let target_ids: Vec<i32> = user_technology::Entity::find()
+        .filter(
             Condition::all()
             .add(user_technology::Column::TechnologyId.is_in(techs))
-        ).all(&conn).await
+        )
+        .all(&conn).await
         .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::NOT_FOUND})?
         .into_iter().map(|item| item.user_id).collect();
 
@@ -202,4 +204,25 @@ pub async fn get_target_post(
 
     Ok(Json(users))
 
+}
+
+
+
+pub async fn get_apply_caption(
+    Extension(conn): Extension<DatabaseConnection>, 
+    Extension(identity): Extension<Model>
+
+) -> Result<(), APIError>{
+    let mut u: user::ActiveModel = user::Entity::find_by_id(identity.id)
+    .one(&conn)
+    .await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .unwrap()
+    .into();
+
+    u.is_caption_applied = Set(true);
+
+    u.update(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+    Ok(())
 }

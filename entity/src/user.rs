@@ -20,6 +20,8 @@ pub struct Model {
     pub experience: i32,
     pub total_rating: i32,
     pub total_reviews: i32,
+    pub is_caption: bool,
+    pub is_caption_applied: bool,
     pub company: Option<String>,
     pub linkedin: Option<String>,
     pub github: Option<String>,

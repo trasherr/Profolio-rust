@@ -21,7 +21,14 @@ pub async fn roadmap_post(
 
 )-> Result<StatusCode,APIError>{
 
-    let target_model = user::Entity::find().filter(user::Column::Uuid.eq(data.target_uuid)).one(&conn).await
+    let target_model = user::Entity::find()
+    .filter(
+        Condition::all()
+        .add(user::Column::Uuid.eq(data.target_uuid))
+        .add(user::Column::IsCaption.eq(true))
+       
+    )
+    .one(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
     
     
@@ -60,6 +67,7 @@ pub async fn roadmap_post(
             Condition::all()
             .add(user::Column::Ctc.gte(item.ctc_lower))
             .add(user::Column::Ctc.lte(item.ctc_lower))
+            .add(user::Column::IsCaption.eq(true))
         ).order_by_asc(user::Column::Ctc).all(&conn).await
         .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
 
@@ -107,8 +115,9 @@ pub async fn roadmap_get(
     Extension(user): Extension<Model>
 )-> Result<Json<RoadmapModel>, APIError>{
     
-    let roadmap_model = roadmap::Entity::find().filter(roadmap::Column::UserId.eq(user.id))
-        .one(&conn).await
+    let roadmap_model = roadmap::Entity::find()
+    .filter(roadmap::Column::UserId.eq(user.id))
+    .one(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
 
     if roadmap_model == None {

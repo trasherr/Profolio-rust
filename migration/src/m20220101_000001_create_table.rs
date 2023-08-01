@@ -37,6 +37,8 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::Experience).integer().default(0).not_null())
                     .col(ColumnDef::new(User::TotalRating).integer().default(0).not_null())
                     .col(ColumnDef::new(User::TotalReviews).integer().default(0).not_null())
+                    .col(ColumnDef::new(User::IsCaption).boolean().default(false).not_null())
+                    .col(ColumnDef::new(User::IsCaptionApplied).boolean().default(false).not_null())
                     .col(ColumnDef::new(User::Company).string())
                     .col(ColumnDef::new(User::Linkedin).string())
                     .col(ColumnDef::new(User::Github).string())
@@ -72,6 +74,8 @@ pub enum User {
     Experience,
     TotalRating,
     TotalReviews,
+    IsCaption,
+    IsCaptionApplied,
     Company,
     Linkedin,
     Github,
