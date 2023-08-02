@@ -1,3 +1,4 @@
+use entity::review_slot;
 use rand::Rng;
 use sea_orm_migration::async_trait::async_trait;
 use sea_orm_migration::prelude::*;
@@ -8,7 +9,8 @@ use sha2::Digest;
 use sha2::Sha256;
 use sha2::digest;
 use uuid::Uuid;
-
+use chrono::Utc;
+use chrono::Duration;
 // fake
 use fake::Fake;
 #[derive(DeriveMigrationName)]
@@ -75,7 +77,22 @@ impl MigrationTrait for Migration {
                 ..Default::default()
             
             };
-            user.insert(db).await.unwrap();
+            if i % 2 == 0 {
+                let user_data  = user.insert(db).await.unwrap();
+                review_slot::ActiveModel {
+                    caption_id: Set(user_data.id),
+                    uuid: Set(Uuid::new_v4()),
+                    slot_time: Set((Utc::now() + Duration::seconds(48 * 3600)).naive_utc()),
+                    ..Default::default()
+                }.insert(db).await.unwrap();
+
+                review_slot::ActiveModel {
+                    caption_id: Set(user_data.id),
+                    uuid: Set(Uuid::new_v4()),
+                    slot_time: Set((Utc::now() + Duration::seconds(72 * 3600)).naive_utc()),
+                    ..Default::default()
+                }.insert(db).await.unwrap();
+            }
         }
 
         for _ in 0..20{

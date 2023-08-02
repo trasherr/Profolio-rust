@@ -7,10 +7,7 @@ sudo apt-get upgrade
 sudo apt install build-essential
 
 # also install
-sudo apt install librust-openssl-sys-dev
-sudo apt install libudev-dev
-sudo apt install libssl-dev
-sudo apt install pkg-config
+sudo apt install librust-openssl-sys-dev libudev-dev libssl-dev pkg-config
 
 
 # Install and start postgres in ubuntu
@@ -51,7 +48,7 @@ sudo chown -R ubuntu:ubuntu /var/log/pgadmin4
 sudo apt install -y python3-pip
 sudo apt install -y python3-venv
 
-mkidr environments
+mkdir environments
 cd environments/
 python3 -m venv my_env
 source my_env/bin/activate
@@ -79,3 +76,24 @@ python my_env/lib/python3.10/site-packages/pgadmin4/setup.py
 sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
 # Run PG Admin
 gunicorn --bind unix:/tmp/pgadmin4.sock --workers=1 --threads=25 --chdir ~/Profolio-rust/environments/my_env/lib/python3.6/site-packages/pgadmin4 pgAdmin4:app
+
+# Setup Nginx
+sudo apt install nginx
+cd /etc/nginx/sites-available
+sudo nano profoliodb.litehires.com
+
+```
+
+server {
+    listen 80;
+    server_name profoliodb.litehires.com;
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/tmp/pgadmin4.sock;
+    }
+}
+
+```
+sudo ln -s /etc/nginx/sites-available/profoliodb.litehires.com /etc/nginx/sites-enabled/
+sudo systemctl restart nginx
