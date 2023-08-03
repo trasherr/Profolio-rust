@@ -22,7 +22,7 @@ pub fn user_router() -> Router {
     // .route(&config::endpoint("/user/targets"),get(user_handler::user_tech))
     // .route(&config::endpoint("/user/targets/all"),get(user_handler::user_tech))
     .route(&config::endpoint("/user/targets"),post(user_handler::get_target_post))
-    .route(&config::endpoint("/user/caption/apply"),post(user_handler::get_apply_caption))
+    .route(&config::endpoint("/user/caption/apply"),get(user_handler::get_apply_caption))
 
 
     //roadmap routes
