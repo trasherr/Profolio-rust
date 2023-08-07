@@ -2,7 +2,7 @@
 use axum::{http::StatusCode, Json, Extension, extract::Path };
 use chrono::{DateTime, Utc};
 use entity::{user::{self, Model}, review_slot};
-use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition };
+use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition, QueryOrder };
 
 use serde::{Deserialize, Serialize};
 
@@ -34,7 +34,10 @@ pub async fn get_caption_slots(
     }
     let captain = captain_model.unwrap();
 
-    let slots: Vec<ReviewSoltModel> = review_slot::Entity::find().filter(review_slot::Column::CaptionId.eq(captain.id)).all(&conn).await
+    let slots: Vec<ReviewSoltModel> = review_slot::Entity::find()
+    .filter(review_slot::Column::CaptionId.eq(captain.id))
+    .order_by_asc(review_slot::Column::SlotTime)
+    .all(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
     .into_iter().map(|item| ReviewSoltModel {
         id: item.id,uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id,  caption: None
@@ -52,6 +55,7 @@ pub async fn get_review(
     // let cap = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await.unwrap().unwrap();
     let slots: Vec<ReviewSoltModel>= review_slot::Entity::find().filter(review_slot::Column::UserId.eq(identity.id))
     .find_with_related(user::Entity)
+    .order_by_asc(review_slot::Column::SlotTime)
     .all(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
     .into_iter()
@@ -81,7 +85,7 @@ pub async fn book_slot(
     Extension(identity): Extension<Model>,
     Path(uuid): Path<Uuid>
 ) -> Result<Json<ReviewSoltModel>, APIError>{
-
+    println!("{}",uuid);
     let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
 
@@ -154,7 +158,9 @@ pub async fn get_slot(
             .add(review_slot::Column::CaptionId.eq(identity.id))
             .add(review_slot::Column::UserId.eq(identity.id))
             )
-        ).one(&conn).await
+        )
+        .order_by_asc(review_slot::Column::SlotTime)
+        .one(&conn).await
         .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
     
 
