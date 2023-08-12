@@ -5,6 +5,7 @@ mod user_handler;
 mod comunity_handler;
 mod review_handler;
 mod roadmap_handler;
+mod order_handler;
 use crate::utils::config;
 
 pub fn user_router() -> Router {
@@ -31,11 +32,15 @@ pub fn user_router() -> Router {
     //slots and review routes
     .route(&config::endpoint("/user/meetings"),get(review_handler::get_review))
     .route(&config::endpoint("/user/slots/caption/:caption_id"),get(review_handler::get_caption_slots))
-    .route(&config::endpoint("/user/slot/:uuid"),get(review_handler::get_slot))
-    .route(&config::endpoint("/user/slot/:uuid/book"),get(review_handler::book_slot))
+    .route(&config::endpoint("/user/slot/:slot_uuid"),get(review_handler::get_slot))
+    .route(&config::endpoint("/user/slot/book/:order_id"),get(review_handler::book_slot))
     .route(&config::endpoint("/user/slot/create"),post(review_handler::create_slot))
-    .route(&config::endpoint("/user/slot/:uuid/rate"),post(review_handler::save_review))
+    .route(&config::endpoint("/user/slot/:slot_uuid/rate"),post(review_handler::save_review))
 
+    //order routes
+    .route(&config::endpoint("/user/order/slot/:slot_uuid"),post(order_handler::post_order))
+    .route(&config::endpoint("/user/order/signature"),post(order_handler::post_order_signature))
+    
     .layer(cors)
 }
 

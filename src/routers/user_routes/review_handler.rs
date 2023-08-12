@@ -1,7 +1,7 @@
 
 use axum::{http::StatusCode, Json, Extension, extract::Path };
 use chrono::{DateTime, Utc};
-use entity::{user::{self, Model}, review_slot};
+use entity::{user::{self, Model}, review_slot, order};
 use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition, QueryOrder };
 
 use serde::{Deserialize, Serialize};
@@ -83,17 +83,31 @@ pub async fn get_review(
 pub async fn book_slot(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(identity): Extension<Model>,
-    Path(uuid): Path<Uuid>
+    Path(order_id): Path<String>
 ) -> Result<Json<ReviewSoltModel>, APIError>{
-    println!("{}",uuid);
-    let slot = review_slot::Entity::find().filter(review_slot::Column::Uuid.eq(uuid)).one(&conn).await
+
+    println!("{}",order_id);
+    let order_entity = order::Entity::find()
+    .filter(order::Column::OrderId.eq(order_id)).one(&conn)
+    .await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
 
-    if slot == None {
+    if order_entity == None {
         return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
     }
 
-    let mut update_slot: review_slot::ActiveModel = slot.unwrap().into();
+    let order = order_entity.unwrap();
+
+    
+    let slot_entity = review_slot::Entity::find_by_id(order.slot_id).one(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+
+    if slot_entity == None {
+        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
+    }
+    let slot = slot_entity.unwrap();
+
+    let mut update_slot: review_slot::ActiveModel = slot.into();
     update_slot.user_id = Set(Some(identity.id));
     let res = update_slot.update(&conn).await
     .map(|item| ReviewSoltModel { 
@@ -105,7 +119,6 @@ pub async fn book_slot(
         caption: None
     })
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
-
 
     Ok(Json(res))
 
@@ -147,12 +160,12 @@ pub async fn create_slot(
 pub async fn get_slot(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(identity): Extension<Model>,
-    Path(uuid): Path<Uuid>
+    Path(slot_uuid): Path<Uuid>
 ) -> Result<Json<ReviewSoltModel >,APIError>{
 
     let slot_model = review_slot::Entity::find().filter(
         Condition::all()
-        .add(review_slot::Column::Uuid.eq(uuid))
+        .add(review_slot::Column::Uuid.eq(slot_uuid))
         .add(
             Condition::any()
             .add(review_slot::Column::CaptionId.eq(identity.id))
@@ -186,12 +199,12 @@ pub async fn get_slot(
 pub async fn save_review(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(identity): Extension<Model>,
-    Path(uuid): Path<Uuid>,
+    Path(slot_uuid): Path<Uuid>,
     Json(review_res): Json<ReviewPostMeet>
 ) -> Result<StatusCode,APIError>{
 
     let slot = review_slot::Entity::find()
-    .filter(review_slot::Column::Uuid.eq(uuid))
+    .filter(review_slot::Column::Uuid.eq(slot_uuid))
     .one(&conn)
     .await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR })?

@@ -1,13 +1,8 @@
-extern crate dotenv;
-
-use dotenv::dotenv;
-// use tokio_cron_scheduler::{JobScheduler, Job};
 use utils::guard;
-use std::env;
-
 use axum::{Router, Extension, middleware};
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::Database;
 
+// use tokio_cron_scheduler::{JobScheduler, Job};
 
 mod routers;
 mod utils;
@@ -15,13 +10,7 @@ mod models;
 
 #[tokio::main]
 async fn main() {
-
-    dotenv().ok();
-
-    let conn_str = env::var("DATABASE_URL").expect("No Connection");
-    let conn = Database::connect(conn_str).await.expect("Database connection failed");
-
-
+    
     //+++++++++++++++++++++++++++++++++++++++
 
     // let sched = JobScheduler::new().await.unwrap();
@@ -40,13 +29,16 @@ async fn main() {
     // sched.start().await.unwrap();
     //+++++++++++++++++++++++++++++++++++++++++++++++
     
-    server(conn).await;
+    server().await;
 
     // utils::crons::create_leaderboard(conn)
 
 }
 
-pub async fn server(conn: DatabaseConnection) {
+pub async fn server() {
+   
+    let conn_str = (*utils::constants::DATABASE_URL).clone();
+    let conn = Database::connect(conn_str).await.expect("Database connection failed");
 
     let app = Router::new()
     .merge(routers::user_routes::user_router())

@@ -30,6 +30,8 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::order::Entity")]
+    Order,
     #[sea_orm(has_many = "super::review::Entity")]
     Review,
     #[sea_orm(has_many = "super::review_slot::Entity")]
@@ -38,6 +40,12 @@ pub enum Relation {
     RoadmapUser,
     #[sea_orm(has_many = "super::user_technology::Entity")]
     UserTechnology,
+}
+
+impl Related<super::order::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Order.def()
+    }
 }
 
 impl Related<super::review::Entity> for Entity {

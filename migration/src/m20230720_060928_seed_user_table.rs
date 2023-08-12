@@ -65,7 +65,7 @@ impl MigrationTrait for Migration {
                 uuid: Set(Uuid::new_v4()),
                 email: Set(FreeEmail().fake()) ,
                 password: Set(create_hash(&Password(8..12).fake::<String>(), Sha256::default())),
-                phone: Set(CellNumber().fake()),
+                phone: Set(CellNumber().fake::<String>().to_string().replace("(","").replace(")","").replace("-","")),
                 phone_code: ActiveValue::set(91),
                 experience: Set(rand::thread_rng().gen_range(0..20)),
                 company: Set(Some(CompanyName().fake())),

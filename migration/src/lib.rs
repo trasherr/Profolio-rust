@@ -12,6 +12,9 @@ mod m20230713_162119_create_slots;
 mod m20230719_171213_create_roadmap;
 mod m20230719_172144_create_roadmap_user;
 mod m20230720_060928_seed_user_table;
+mod m20230809_042320_create_order_table;
+mod m20230809_045010_create_order_signature_table;
+
 
 
 
@@ -30,6 +33,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20230713_162119_create_slots::Migration),
             Box::new(m20230719_171213_create_roadmap::Migration),
             Box::new(m20230719_172144_create_roadmap_user::Migration),
+            Box::new(m20230809_042320_create_order_table::Migration),
+            Box::new(m20230809_045010_create_order_signature_table::Migration),
 
             //  uncomment for seeding // only works after creating entities
             Box::new(m20230720_060928_seed_user_table::Migration),
