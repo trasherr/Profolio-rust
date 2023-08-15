@@ -1,6 +1,6 @@
 use axum::{Extension, Json, http::StatusCode };
 use chrono::Utc;
-use entity::{user::{Model, self}, leagues, roadmap, roadmap_user};
+use entity::{user, leagues, roadmap, roadmap_user};
 use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, Condition, QueryOrder, Set, ActiveModelTrait };
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -16,7 +16,7 @@ pub struct RoadmapDetails{
 
 pub async fn roadmap_post(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(user): Extension<Model>,
+    Extension(user): Extension<user::Model>,
     Json(data): Json<RoadmapDetails>
 
 )-> Result<StatusCode,APIError>{
@@ -112,7 +112,7 @@ pub async fn roadmap_post(
 
 pub async fn roadmap_get(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(user): Extension<Model>
+    Extension(user): Extension<user::Model>
 )-> Result<Json<RoadmapModel>, APIError>{
     
     let roadmap_model = roadmap::Entity::find()

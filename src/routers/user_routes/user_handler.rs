@@ -1,5 +1,5 @@
 use axum::{ http::StatusCode, Json, Extension };
-use entity::{user::{self, Model}, user_technology, technology};
+use entity::{user, user_technology, technology};
 use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, LoaderTrait, Condition, QueryOrder};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -34,7 +34,7 @@ pub struct Filters{
 
 pub async fn update(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(identity): Extension<Model>, 
+    Extension(identity): Extension<user::Model>, 
     Json(user_data): Json<UserSubDetails>
 ) -> Result<StatusCode, APIError> {
 
@@ -71,7 +71,7 @@ pub async fn update(
 
 pub async fn add_tech(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(identity): Extension<Model>, 
+    Extension(identity): Extension<user::Model>, 
     Json(technologies): Json<Vec<Uuid>>
 ) -> Result<StatusCode,APIError> {
 
@@ -100,7 +100,7 @@ pub async fn add_tech(
 }
 
 
-pub async fn user(Extension(identity): Extension<Model>) -> Result<Json<UserModel>,APIError>{
+pub async fn user(Extension(identity): Extension<user::Model>) -> Result<Json<UserModel>,APIError>{
 
     let data = UserModel {
         id: identity.id,
@@ -113,6 +113,7 @@ pub async fn user(Extension(identity): Extension<Model>) -> Result<Json<UserMode
         experience: identity.experience,
         company: identity.company,
         is_caption: identity.is_caption,
+        is_caption_applied: identity.is_caption_applied,
         uuid: identity.uuid,
         linkedin: identity.linkedin,
         github: identity.github,
@@ -125,7 +126,7 @@ pub async fn user(Extension(identity): Extension<Model>) -> Result<Json<UserMode
 
 pub async fn user_tech(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(identity): Extension<Model>
+    Extension(identity): Extension<user::Model>
 ) -> Result<Json<Vec<TechnologyResponse>>,APIError>{
 
     let _res = user_technology::Entity::find().filter(user_technology::Column::UserId.eq(identity.id)).all(&conn).await
@@ -150,7 +151,7 @@ pub async fn user_tech(
 
 pub async fn get_target_post(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(identity): Extension<Model>,
+    Extension(identity): Extension<user::Model>,
     Json(filters): Json<Filters>
 
 ) -> Result<Json<Vec<UserMicroModel>>, APIError>{
@@ -210,7 +211,7 @@ pub async fn get_target_post(
 
 pub async fn get_apply_caption(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(identity): Extension<Model>
+    Extension(identity): Extension<user::Model>
 
 ) -> Result<(), APIError>{
     let mut u: user::ActiveModel = user::Entity::find_by_id(identity.id)

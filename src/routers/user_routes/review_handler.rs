@@ -1,11 +1,9 @@
 
 use axum::{http::StatusCode, Json, Extension, extract::Path };
 use chrono::{DateTime, Utc};
-use entity::{user::{self, Model}, review_slot, order};
-use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition, QueryOrder };
-
+use entity::{user, review_slot, order};
+use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition, QueryOrder, QuerySelect };
 use serde::{Deserialize, Serialize};
-
 use uuid::Uuid;
 use crate::{models::{review_model::ReviewSoltModel, user_model::UserMicroModel}, utils::api_error::APIError};
 
@@ -48,7 +46,7 @@ pub async fn get_caption_slots(
 
 pub async fn get_review(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(identity): Extension<Model>,
+    Extension(identity): Extension<user::Model>,
     // Path(caption_id): Path<Uuid>
 ) -> Result<Json<Vec<ReviewSoltModel>>,APIError>{
 
@@ -80,9 +78,44 @@ pub async fn get_review(
 }
 
 
+pub async fn get_review_count(
+    Extension(conn): Extension<DatabaseConnection>, 
+    Extension(identity): Extension<user::Model>,
+    Path(meeting_count): Path<u64>
+) -> Result<Json<Vec<ReviewSoltModel>>,APIError>{
+
+    // let cap = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await.unwrap().unwrap();
+    let slots: Vec<ReviewSoltModel>= review_slot::Entity::find().filter(review_slot::Column::UserId.eq(identity.id))
+    .find_with_related(user::Entity)
+    .order_by_asc(review_slot::Column::SlotTime)
+    .limit(meeting_count)
+    .all(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .into_iter()
+    .map(|item| 
+        {
+            let temp: UserMicroModel = item.1.first()
+            .map(|item2| UserMicroModel { name: item2.name.to_owned(), company: item2.company.to_owned(), ctc: item2.ctc, uuid: item2.uuid }).unwrap();
+
+            ReviewSoltModel {
+                id: item.0.id,
+                uuid: item.0.uuid, 
+                user_id: item.0.user_id,
+                slot_time: item.0.slot_time, 
+                caption_id: item.0.caption_id, 
+                caption: Some(temp),
+            }
+        }
+
+    ).collect();
+    
+    Ok(Json(slots))
+}
+
+
 pub async fn book_slot(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(identity): Extension<Model>,
+    Extension(identity): Extension<user::Model>,
     Path(order_id): Path<String>
 ) -> Result<Json<ReviewSoltModel>, APIError>{
 
@@ -127,7 +160,7 @@ pub async fn book_slot(
 
 pub async fn create_slot(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(identity): Extension<Model>,
+    Extension(identity): Extension<user::Model>,
     Json(slot_data): Json<CreateSlot>
 ) -> Result<Json<ReviewSoltModel>,APIError>{
 
@@ -159,7 +192,7 @@ pub async fn create_slot(
 
 pub async fn get_slot(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(identity): Extension<Model>,
+    Extension(identity): Extension<user::Model>,
     Path(slot_uuid): Path<Uuid>
 ) -> Result<Json<ReviewSoltModel >,APIError>{
 
@@ -182,6 +215,17 @@ pub async fn get_slot(
     }
     let slot = slot_model.unwrap();
 
+    let caption_entity = user::Entity::find_by_id(slot.caption_id)
+    .one(&conn)
+    .await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+
+    if caption_entity == None {
+        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
+    }
+
+    let caption = caption_entity.unwrap();
+
     return Ok(Json( 
         ReviewSoltModel {
             id: slot.id, 
@@ -189,7 +233,14 @@ pub async fn get_slot(
             user_id: slot.user_id, 
             slot_time: slot.slot_time, 
             caption_id: slot.caption_id, 
-            caption: None
+            caption: Some(
+                UserMicroModel{
+                    name: caption.name,
+                    company: caption.company,
+                    ctc: caption.ctc,
+                    uuid: caption.uuid,
+                }
+            )
         }
     ));
 
@@ -198,7 +249,7 @@ pub async fn get_slot(
 
 pub async fn save_review(
     Extension(conn): Extension<DatabaseConnection>, 
-    Extension(identity): Extension<Model>,
+    Extension(identity): Extension<user::Model>,
     Path(slot_uuid): Path<Uuid>,
     Json(review_res): Json<ReviewPostMeet>
 ) -> Result<StatusCode,APIError>{

@@ -20,8 +20,6 @@ pub fn user_router() -> Router {
     .route(&config::endpoint("/user"),post(user_handler::update))
     .route(&config::endpoint("/user/tech"),post(user_handler::add_tech))
     .route(&config::endpoint("/user/tech"),get(user_handler::user_tech))
-    // .route(&config::endpoint("/user/targets"),get(user_handler::user_tech))
-    // .route(&config::endpoint("/user/targets/all"),get(user_handler::user_tech))
     .route(&config::endpoint("/user/targets"),post(user_handler::get_target_post))
     .route(&config::endpoint("/user/caption/apply"),get(user_handler::get_apply_caption))
 
@@ -31,6 +29,7 @@ pub fn user_router() -> Router {
 
     //slots and review routes
     .route(&config::endpoint("/user/meetings"),get(review_handler::get_review))
+    .route(&config::endpoint("/user/meetings/:meeting_count"),get(review_handler::get_review_count))
     .route(&config::endpoint("/user/slots/caption/:caption_id"),get(review_handler::get_caption_slots))
     .route(&config::endpoint("/user/slot/:slot_uuid"),get(review_handler::get_slot))
     .route(&config::endpoint("/user/slot/book/:order_id"),get(review_handler::book_slot))

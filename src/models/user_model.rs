@@ -15,6 +15,7 @@ pub struct UserModel{
     pub company: Option<String>,
     pub uuid: Uuid,
     pub is_caption: bool,
+    pub is_caption_applied: bool,
     pub linkedin:Option<String>,
     pub github: Option<String>,
     pub others: Option<String>

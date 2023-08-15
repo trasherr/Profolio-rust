@@ -7,7 +7,6 @@ use uuid::Uuid;
 use hyper_tls::HttpsConnector;
 use crate::{utils::{api_error::APIError, self}, models::order_model::{OrderModel, OrderApiReq, OrderApiRes, OrderApiSignature}};
 
-
 pub async fn post_order(
     Extension(conn): Extension<DatabaseConnection>,
     Extension(identity): Extension<user::Model>, 

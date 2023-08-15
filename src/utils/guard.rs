@@ -17,7 +17,7 @@ pub async fn guard<T>(mut request: Request<T>, next: Next<T>) -> Result<Response
 
     let user = user::Entity::find()
         .filter(user::Column::Email.eq(claims.email))
-        .one(db)
+        .one(db)    
         .await
         .map_err(|_error| {
             StatusCode::INTERNAL_SERVER_ERROR
