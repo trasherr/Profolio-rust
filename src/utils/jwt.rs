@@ -18,7 +18,7 @@ pub struct Claims {
 
 pub fn encode_jwt(email: String) ->Result<String, StatusCode>{
     let now = Utc::now();
-    let expire = Duration::minutes(120);
+    let expire = Duration::hours(120);
     let claims = Claims{ iat: now.timestamp() as usize, exp: (now+expire).timestamp() as usize, email};
     let secret = env::var("SECURITY_KEY").expect("SECURITY_KEY not found");
 
