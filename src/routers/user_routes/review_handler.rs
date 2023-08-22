@@ -1,6 +1,6 @@
 
 use axum::{http::StatusCode, Json, Extension, extract::Path };
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc, serde::ts_milliseconds};
 use entity::{user, review_slot, order};
 use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition, QueryOrder, QuerySelect };
 use serde::{Deserialize, Serialize};
@@ -9,6 +9,7 @@ use crate::{models::{review_model::ReviewSoltModel, user_model::UserMicroModel},
 
 #[derive(Serialize,Deserialize)]
 pub struct CreateSlot{
+    #[serde(with = "ts_milliseconds")]
     slot_time: DateTime<Utc>,
 }
 
