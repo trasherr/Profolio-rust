@@ -69,13 +69,19 @@ pub async fn roadmap_post(
         let count = captions_all.len();
 
         let mut required_captains: Vec<user::Model> = vec![];
+        
 
         for _ in 1..5{
             let cap_ids = rand::thread_rng().gen_range(0..count);
+            if required_captains.contains(&captions_all[cap_ids]) {
+                continue;
+            }
             required_captains.push(captions_all[cap_ids].clone());
 
         };
-
+        if required_captains.len() == 0 as usize {
+            continue;
+        }
         // add to path
         for _item in required_captains{
 
