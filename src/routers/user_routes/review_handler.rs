@@ -25,13 +25,9 @@ pub async fn get_caption_slots(
     Path(caption_id): Path<Uuid>
 ) -> Result<Json<Vec<ReviewSoltModel>>, APIError>{
 
-    let captain_model = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await
-    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
-
-    if captain_model == None {
-        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
-    }
-    let captain = captain_model.unwrap();
+    let captain = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
 
     let slots: Vec<ReviewSoltModel> = review_slot::Entity::find()
     .filter(review_slot::Column::CaptionId.eq(captain.id))
@@ -61,7 +57,12 @@ pub async fn get_review(
     .map(|item| 
         {
             let temp: UserMicroModel = item.1.first()
-            .map(|item2| UserMicroModel { name: item2.name.to_owned(), company: item2.company.to_owned(), ctc: item2.ctc, uuid: item2.uuid }).unwrap();
+            .map(|item2| UserMicroModel { 
+                name: item2.name.to_owned(), 
+                company: item2.company.to_owned(), 
+                ctc: item2.ctc, uuid: item2.uuid,
+                ..Default::default()
+            }).unwrap();
 
             ReviewSoltModel {
                 id: item.0.id,
@@ -96,7 +97,13 @@ pub async fn get_review_count(
     .map(|item| 
         {
             let temp: UserMicroModel = item.1.first()
-            .map(|item2| UserMicroModel { name: item2.name.to_owned(), company: item2.company.to_owned(), ctc: item2.ctc, uuid: item2.uuid }).unwrap();
+            .map(|item2| UserMicroModel { 
+                name: item2.name.to_owned(), 
+                company: item2.company.to_owned(), 
+                ctc: item2.ctc, 
+                uuid: item2.uuid,
+                ..Default::default()
+            }).unwrap();
 
             ReviewSoltModel {
                 id: item.0.id,
@@ -121,25 +128,17 @@ pub async fn book_slot(
 ) -> Result<Json<ReviewSoltModel>, APIError>{
 
     println!("{}",order_id);
-    let order_entity = order::Entity::find()
+    let order = order::Entity::find()
     .filter(order::Column::OrderId.eq(order_id)).one(&conn)
     .await
-    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
-
-    if order_entity == None {
-        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
-    }
-
-    let order = order_entity.unwrap();
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
 
     
-    let slot_entity = review_slot::Entity::find_by_id(order.slot_id).one(&conn).await
-    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+    let slot = review_slot::Entity::find_by_id(order.slot_id).one(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
 
-    if slot_entity == None {
-        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
-    }
-    let slot = slot_entity.unwrap();
 
     let mut update_slot: review_slot::ActiveModel = slot.into();
     update_slot.user_id = Set(Some(identity.id));
@@ -197,7 +196,7 @@ pub async fn get_slot(
     Path(slot_uuid): Path<Uuid>
 ) -> Result<Json<ReviewSoltModel >,APIError>{
 
-    let slot_model = review_slot::Entity::find().filter(
+    let slot = review_slot::Entity::find().filter(
         Condition::all()
         .add(review_slot::Column::Uuid.eq(slot_uuid))
         .add(
@@ -206,26 +205,17 @@ pub async fn get_slot(
             .add(review_slot::Column::UserId.eq(identity.id))
             )
         )
-        .order_by_asc(review_slot::Column::SlotTime)
-        .one(&conn).await
-        .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
-    
+    .order_by_asc(review_slot::Column::SlotTime)
+    .one(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
 
-    if slot_model == None {
-        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
-    }
-    let slot = slot_model.unwrap();
 
-    let caption_entity = user::Entity::find_by_id(slot.caption_id)
+    let caption = user::Entity::find_by_id(slot.caption_id)
     .one(&conn)
     .await
-    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
-
-    if caption_entity == None {
-        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
-    }
-
-    let caption = caption_entity.unwrap();
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
 
     return Ok(Json( 
         ReviewSoltModel {
@@ -234,14 +224,7 @@ pub async fn get_slot(
             user_id: slot.user_id, 
             slot_time: slot.slot_time, 
             caption_id: slot.caption_id, 
-            caption: Some(
-                UserMicroModel{
-                    name: caption.name,
-                    company: caption.company,
-                    ctc: caption.ctc,
-                    uuid: caption.uuid,
-                }
-            )
+            caption: Some(UserMicroModel::from(caption))
         }
     ));
 

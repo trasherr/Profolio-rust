@@ -21,7 +21,7 @@ pub async fn roadmap_post(
 
 )-> Result<StatusCode,APIError>{
 
-    let target_model = user::Entity::find()
+    let target = user::Entity::find()
     .filter(
         Condition::all()
         .add(user::Column::Uuid.eq(data.target_uuid))
@@ -29,14 +29,8 @@ pub async fn roadmap_post(
        
     )
     .one(&conn).await
-    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
-    
-    
-    if target_model == None {
-        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
-
-    }
-    let target = target_model.unwrap();
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
 
     let league = leagues::Entity::find().filter(
         Condition::all()
@@ -115,29 +109,20 @@ pub async fn roadmap_get(
     Extension(user): Extension<user::Model>
 )-> Result<Json<RoadmapModel>, APIError>{
     
-    let roadmap_model = roadmap::Entity::find()
+    let roadmap = roadmap::Entity::find()
     .filter(roadmap::Column::UserId.eq(user.id))
     .one(&conn).await
-    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
 
-    if roadmap_model == None {
-        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
-    }
-        
-    let raodmap = roadmap_model.unwrap();
     
-    let roadmap_user_models: Vec<LevelModel> = roadmap_user::Entity::find().filter(roadmap_user::Column::RoadmapId.eq(raodmap.id))
+    let roadmap_user_models: Vec<LevelModel> = roadmap_user::Entity::find().filter(roadmap_user::Column::RoadmapId.eq(roadmap.id))
     .find_with_related(user::Entity)
     .all(&conn).await.unwrap().into_iter()
     .map(|item| {
 
         let temp: Vec<UserMicroModel> = item.1
-        .into_iter().map(|item2| UserMicroModel { 
-            name: item2.name.to_owned(), 
-            company: item2.company.to_owned(), 
-            ctc: item2.ctc, 
-            uuid: item2.uuid  
-        }).collect();
+        .into_iter().map(|item2| UserMicroModel::from(item2)).collect();
 
         LevelModel{
             id: item.0.id,
@@ -147,13 +132,13 @@ pub async fn roadmap_get(
     }).collect();
     
     let data = RoadmapModel{
-            id: raodmap.id,
-            uuid: raodmap.uuid,
-            levels: roadmap_user_models,
-            target: raodmap.target_id,
-            created_at: raodmap.created_at,
-            modified_at: raodmap.modified_at,
-        };
-        Ok(Json(data))
+        id: roadmap.id,
+        uuid: roadmap.uuid,
+        levels: roadmap_user_models,
+        target: roadmap.target_id,
+        created_at: roadmap.created_at,
+        modified_at: roadmap.modified_at,
+    };
+    Ok(Json(data))
     
 }

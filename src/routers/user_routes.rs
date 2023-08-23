@@ -23,6 +23,9 @@ pub fn user_router() -> Router {
     .route(&config::endpoint("/user/targets"),post(user_handler::get_target_post))
     .route(&config::endpoint("/user/caption/apply"),get(user_handler::get_apply_caption))
 
+    //get user details
+    .route(&config::endpoint("/user/:user_uuid") ,get(user_handler::get_other_user))
+
     //roadmap routes
     .route(&config::endpoint("/user/roadmap"),post(roadmap_handler::roadmap_post))
     .route(&config::endpoint("/user/roadmap"),get(roadmap_handler::roadmap_get))

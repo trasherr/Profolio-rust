@@ -1,9 +1,9 @@
-use axum::{ http::StatusCode, Json, Extension };
+use axum::{ http::StatusCode, Json, Extension, extract::Path };
 use entity::{user, user_technology, technology};
 use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, LoaderTrait, Condition, QueryOrder};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::{models::user_model::{UserModel, UserMicroModel}, utils::api_error::APIError};
+use crate::{models::{user_model::{UserModel, UserMicroModel}, tech_model::TechModel}, utils::api_error::APIError};
 
 #[derive(Deserialize)]
 pub struct UserSubDetails{
@@ -102,24 +102,7 @@ pub async fn add_tech(
 
 pub async fn user(Extension(identity): Extension<user::Model>) -> Result<Json<UserModel>,APIError>{
 
-    let data = UserModel {
-        id: identity.id,
-        name: identity.name,
-        email: identity.email,
-        phone: identity.phone,
-        phone_code: identity.phone_code,
-        ctc: identity.ctc,
-        profession: identity.profession,
-        experience: identity.experience,
-        company: identity.company,
-        is_caption: identity.is_caption,
-        is_caption_applied: identity.is_caption_applied,
-        uuid: identity.uuid,
-        linkedin: identity.linkedin,
-        github: identity.github,
-        others: identity.others
-    };
-
+    let data = UserModel::from(identity);
     Ok(Json(data))
 
 }
@@ -200,7 +183,7 @@ pub async fn get_target_post(
     .all(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::NOT_FOUND})?
     .into_iter()
-    .map(|item|  UserMicroModel { name: item.name, company: item.company, ctc: item.ctc, uuid: item.uuid })
+    .map(|item|  UserMicroModel::from(item))
     .collect();
 
     Ok(Json(users))
@@ -226,4 +209,37 @@ pub async fn get_apply_caption(
     u.update(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
     Ok(())
+}
+
+
+pub async fn get_other_user(
+    Extension(conn): Extension<DatabaseConnection>, 
+    Path(user_uuid): Path<Uuid>,
+) -> Result<Json<UserModel>,APIError>{
+
+    let data = user::Entity::find()
+    .filter(user::Column::Uuid.eq(user_uuid))
+    .one(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
+
+    let techs: Vec<TechModel> = user_technology::Entity::find()
+    .filter(user_technology::Column::UserId.eq(data.id))
+    .find_with_related(technology::Entity).all(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .into_iter().map(|item| {
+        let temp = item.1.first().unwrap();
+        TechModel{
+            uuid: temp.uuid,
+            title: temp.title.to_owned(),
+            normalized_title: temp.normalized_title.to_owned()
+        }
+    })
+    .collect();
+
+    let mut user_data = UserModel::from(data);
+    user_data.tech = Some(techs);
+
+    Ok(Json(user_data))
+
 }

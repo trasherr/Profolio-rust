@@ -13,10 +13,11 @@ pub async fn post_order(
     Path(slot_uuid): Path<Uuid>
 ) -> Result<Json<OrderModel>,APIError>{
 
-    let slot_entity = review_slot::Entity::find()
+    let slot = review_slot::Entity::find()
     .filter(review_slot::Column::Uuid.eq(slot_uuid))
     .one(&conn).await
-    .map_err(|err| APIError { error_code: Some(1), message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})? ;
+    .map_err(|err| APIError { error_code: Some(1), message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
 
         
     let last_order  = order::Entity::find()
@@ -24,17 +25,12 @@ pub async fn post_order(
     .one(&conn).await
     .map_err(|err| APIError { error_code: Some(2), message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})? ;
 
-    if slot_entity == None {
-        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
-    }
-
     let receipt_no = match last_order {
         None => 0,
         _ => last_order.unwrap().id + 1 
     };
 
 
-    let slot = slot_entity.unwrap();
 
     let order_data: String = OrderApiReq {
         amount: 100000,
@@ -130,13 +126,10 @@ pub async fn post_order_signature(
         
     }
 
-    let order_entity = order::Entity::find().filter(order::Column::OrderId.eq(order_signature.order_id)).one(&conn).await
-    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+    let order_data = order::Entity::find().filter(order::Column::OrderId.eq(order_signature.order_id)).one(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
 
-    if order_entity == None {
-        return Err(APIError { error_code: None, message: "Resource Not Found".to_string(), status_code: StatusCode::NOT_FOUND});
-    }
-    let order_data = order_entity.unwrap();
     let mut order: order::ActiveModel = order_data.clone().into();
    
     
