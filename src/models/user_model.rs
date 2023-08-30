@@ -24,7 +24,7 @@ pub struct UserModel{
     pub tech: Option<Vec<TechModel>>
 }
 
-#[derive(Serialize,Deserialize,Clone,Default)]
+#[derive(Serialize,Deserialize,Clone,Default,Debug)]
 pub struct UserMicroModel{
     pub name: String,
     pub company: Option<String>,

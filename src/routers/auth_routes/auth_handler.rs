@@ -52,10 +52,10 @@ pub async fn login(Extension(conn): Extension<DatabaseConnection>, Json(user_dat
     )
     .one(&conn)
     .await
-    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::UNAUTHORIZED})?;
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::UNAUTHORIZED})?
+    .ok_or(APIError { error_code: None, message: "Invalid Credentials".to_owned(), status_code: StatusCode::UNAUTHORIZED})?;
 
-
-    let token = jwt::encode_jwt(user.unwrap().email);
+    let token = jwt::encode_jwt(user.email);
 
     Ok(Json(AuthRes { token: token.unwrap() }))
 }

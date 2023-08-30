@@ -1,4 +1,6 @@
 use entity::review_slot;
+use entity::technology;
+use entity::user_technology;
 use rand::Rng;
 use sea_orm_migration::async_trait::async_trait;
 use sea_orm_migration::prelude::*;
@@ -92,7 +94,18 @@ impl MigrationTrait for Migration {
                     slot_time: Set((Utc::now() + Duration::seconds(72 * 3600)).naive_utc()),
                     ..Default::default()
                 }.insert(db).await.unwrap();
+
+
+                let tech_user =user_technology::ActiveModel{ 
+                    technology_id: Set(rand::thread_rng().gen_range(1..5)) , 
+                    user_id:Set( user_data.id), 
+                    score: Set(1.0),
+                    ..Default::default()
+                };
+
+                tech_user.insert(db).await.unwrap();
             }
+           
         }
 
         for _ in 0..20{

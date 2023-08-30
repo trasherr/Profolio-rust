@@ -37,9 +37,9 @@ impl MigratorTrait for Migrator {
             Box::new(m20230809_045010_create_order_signature_table::Migration),
 
             //  uncomment for seeding // only works after creating entities
-            Box::new(m20230720_060928_seed_user_table::Migration),
             Box::new(m20230623_114507_seed_tech_table::Migration),
             Box::new(m20230712_063039_seed_league_table::Migration),
+            Box::new(m20230720_060928_seed_user_table::Migration),
         ]
     }
 }
