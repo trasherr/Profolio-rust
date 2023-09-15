@@ -91,7 +91,7 @@ pub async fn register(Extension(conn): Extension<DatabaseConnection>, Json(user_
     user.insert(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR })?;
     
-    let token = jwt::encode_jwt(user_data.email.clone());
+    let token = jwt::encode_jwt(user_data.email.to_lowercase().clone());
     
     Ok(Json(AuthRes { token: token.unwrap() }))
 }
