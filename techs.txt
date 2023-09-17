@@ -1,17 +1,4 @@
 ﻿ActiveVFP
-Agavi
-AIDA/Web
-Ametys CMS
-Apache Cocoon
-Apache Shale
-Apache Sling
-Apache Struts 1
-Apache Struts 2
-Apache Tapestry
-Apache Tiles
-Apache Wicket
-Apotomo
-Appery.io
 AppFuse
 ASP.NET
 ASP.NET Core
@@ -20,245 +7,96 @@ ASP.NET Razor
 ASP.NET Web Forms
 ATL Server
 Backdrop CMS
-Barracuda (web framework)
+Barracuda
 Base One Foundation Component Library
-BEdita
 Brutos Framework
 CakePHP
-Castle Project
-Catalyst (software)
-Apache Click
 CodeCharge Studio
 CodeIgniter
 ColdBox Platform
 ColdSpring Framework
 Comparison of JavaScript-based web frameworks
 CppCMS
-Crypton (framework)
+Crypton
 Dabble DB
-DAMP (software bundle)
-Dancer (software)
-Direct Web Remoting
-Django (web framework)
-Drogon (software)
+DAMP
+Django
+Drogon
 Drupal
-Echo (framework)
-Eclipse Mojarra
-Elm (programming language)
 Ember.js
 Exponent CMS
 Express.js
 Ext JS
 Fat-Free Framework
 Fluid UI
-Foundation (framework)
+Foundation
 FuelPHP
 Fusebox (programming)
-Gatsby (software)
+Gatsby
 GetSimple CMS
 Google Apps Script
-Grails (framework)
-Gyroscope (software)
-Hammerkit
-Horde (software)
-IBM WebSphere Application Server
-IBM WebSphere Application Server Community Edition
-ICEfaces
-Jakarta EE
+Grails
 Jamroom
 JBND
 JBoss Seam
 JHipster
 Joomla
 JQuery
-JQuery Mobile
-JVx (Framework)
-JWt (Java web toolkit)
 Kajona
 Kitura
 Laminas
 Laravel
-Li3 (software)
-Lift (web framework)
+Li3
+Lift
 Lively Kernel
-LYME (software bundle)
-MEAN (solution stack)
-Merb
-Mojolicious
 MooTools
 Mozilla Skywriter
-Nette Framework
+Nette
 Next.js
 Nuxt.js
-Obidos (software)
-Open Semantic Framework
-Oracle Application Express
 Orchard Project
-Padrino (web framework)
-Pandesic
-Pantheon Systems
-PEAR
-Phoenix (web framework)
+Phoenix
 PhpCodeGenie
-Play Framework
-Plone (software)
-Pop PHP Framework
-PRADO (framework)
-ProcessWire
-Qcodo
-Quarkus
-Quasar framework
-RichFaces
-Rocket (web framework)
+Play
+Plone
+Pop PHP
+PRADO
+Rocket
 Ruby on Rails
-Run BASIC
 Sails.js
 Scalatra
-Seaside (software)
-Servant (web framework)
-SignalR
-Silex (web framework)
-Silverstripe CMS
-Sinatra (software)
-Smart Framework PHP
-Snap (web framework)
-Solution stack
-Spark (software)
-Spring Boot
-Spring Framework
-Spring Roo
-Stripes (framework)
-Sun Web Developer Pack
 Symfony
 Topincs
 Vaadin
-Vapor (web framework)
 Vue.js
-WaveMaker
-WebObjects
-WebSphere sMash
-Wt (web toolkit)
-XOOPS
-Yesod (web framework)
-Yii
-ZK (framework)
 Android
 SAP NetWeaver
-A.NET (A#/A sharp)
-A-0 System
-A+ (A plus)
-ABAP
-ABC
-ABC ALGOL
-ACC
-Accent (Rational Synergy)
-Ace Distributed Application Specification Language (DASL)
-Action!
+A.NET
 ActionScript
-Actor
-Ada – ISO/IEC 8652
-Adenine (Haystack)
-AdvPL
-Agda
-Agilent VEE (Keysight VEE)
-Agora
-AIMMS
-Aldor
-Alef
-ALF
-ALGOL 58
-ALGOL 60
-ALGOL 68
-ALGOL W
-Alice (Alice ML)
-Alma-0
-AmbientTalk
-Amiga E
-AMPL
 Analitik
 AngelScript
 Apache Pig latin
-Apex (Salesforce.com, Inc)
+Apex
 APL
-App Inventor for Android's visual block language (MIT App Inventor)
-AppleScript
 APT
 Arc
 ARexx
-Argus
-Assembly language (ASM)
-AutoHotkey
-AutoIt
-AutoLISP / Visual LISP
-Averest
-AWK
+Angular
 Axum
 B
 Babbage
 Ballerina
 Bash
 BASIC
-Batch file (Windows/MS-DOS)
-bc (basic calculator)
 BCPL
 BeanShell
 BETA
 BLISS
-Blockly
-BlooP
-Boo
-Boomerang
-Bosque
-CC--
 C++
 C*
 C#
-C/AL
-Caché ObjectScript
-C Shell
 Caml
-Carbon
-Catrobat
-Cayenne (Lennart Augustsson)
-CDuce
-Cecil
-CESIL (Computer Education in Schools Instruction Language)
-Céu
-Ceylon
-CFEngine
-Cg (High-Level Shader/Shading Language [HLSL])
-Ch
-Chapel (Cascade High Productivity Language)
-Charm
-CHILL
-CHIP-8
-ChucK
-Cilk (also Cilk++ and Cilk plus)
-Claire
-Clarion
-Clean
-Clipper
-CLIPS
 CLIST
-Clojure
-CLU
-CMS-2
-COBOL – ISO/IEC 1989
-CobolScript – COBOL Scripting language
-Cobra
-CoffeeScript
-ColdFusion
-COMAL
-COMIT
-Common Intermediate Language (CIL)
-Common Lisp (also known as CL)
-COMPASS
-Component Pascal
-COMTRAN
-Concurrent Pascal
-Constraint Handling Rules (CHR)
-Control Language
-Coq
 CORAL, Coral 66
 CorVision
 COWSEL
@@ -271,7 +109,6 @@ Curl
 Curry
 Cybil
 Cyclone
-Cypher Query Language
 Cython
 CEEMAC
 DLang
@@ -280,41 +117,16 @@ Darwin
 DataFlex
 Datalog
 DATATRIEVE
-dBase
-dc
-DCL (DIGITAL Command Language)
-Delphi
-DIBOL
-DinkC
-Dog
 Draco
 DRAKON
-Dylan
-DYNAMO
-DAX (Data Analysis Expressions)
-E
-Ease
 Easy PL/I
 EASYTRIEVE PLUS
-eC
-ECMAScript
-Edinburgh IMP
-EGL
-Eiffel
 ELAN
 Elixir
 Elm
 Emacs Lisp
 Emerald
 Epigram
-EPL (Easy Programming Language)
-Erlang
-es
-Escher
-ESPOL
-Esterel
-Etoys
-Euclid
 Euler
 Euphoria
 EusLisp Robot Programming Language
@@ -323,37 +135,21 @@ EXEC 2
 Executable UML
 Ezhil
 F
-F# (F sharp)
-F*
+F#
 Factor
 Fantom
 FAUST
 FFP
 fish
-Fjölnir
 FL
 Flavors
 Flex
 Flix
-FlooP
-FLOW-MATIC (B0)
-FOCAL (Formulating On-Line Calculations in Algebraic Language/FOrmula CALculator)
-FOCUS
-FOIL
-FORMAC
-@Formula
-Forth
 Fortran
 Fortress
-FP
-FoxBase/FoxPro
 Franz Lisp
 Futhark
-F-Script
-Game Maker Language
-GameMonkey Script
-General Algebraic Modeling System
-GAP
+FScript
 G-code
 GDScript (Godot)
 Genie
@@ -363,21 +159,10 @@ OpenGL Shading Language
 GNU E
 GNU Ubiquitous Intelligent Language for Extensions
 Go
-Go!
-Game Oriented Assembly Lisp
-Gödel
-Golo
-Gosu
-GOTRAN (IBM 1620)
-General Purpose Simulation System
 GraphTalk
 GRASS
 Grasshopper
 Groovy
-Hack
-HAGGIS
-HAL/S
-Halide (programming language)
 Hamilton C shell
 Harbour
 Hartmann pipelines
@@ -392,34 +177,8 @@ Hop
 Hopscotch
 Hope
 Hume
-HyperTalk
-Hy
-Icon
-IBM Basic assembly language
-IBM HAScript
-IBM Informix-4GL
-IBM RPG
-IDL
-Idris
-Inform
 ISLISP
-J
-J# (J sharp)
-J++ (J plus plus)
-JADE
-Jai
-JAL
-Janus
-JASS
-Java
-JavaFX Script
 JavaScript
-Jess
-JCL
-JEAN
-Join Java
-JOSS
-Joule
 JOVIAL
 Joy
 jq
@@ -429,48 +188,17 @@ Julia
 Jython
 K
 Kaleidoscope
-Karel
-KEE
-Kixtart
-Klerer-May System
 KIF
 Kojo
 Kotlin
 KRC
 KRL
 KRYPTON
-KornShell
-Kodu
-Kv (Kivy)
 LabVIEW
 Ladder
-LANSA
-Lasso
-Lava
-LC-3
-Lean
-Legoscript
-LIL
 LilyPond
 Limbo
 LINC
-Lingo
-LINQ
-LIS
-LISA
-Language H
-Lisp
-Lite-C
-Lithe
-Little b
-LLL
-Logo
-Logtalk
-LotusScript
-LPC
-LSE
-LSL
-LiveCode
 LiveScript
 Lua
 Lucid
@@ -481,112 +209,38 @@ M Formula language
 M2001
 M4
 M#
-Machine code
-MAD
-MAD/I
-Magik
-Magma
-Máni
 Maple
 MAPPER
 MARK-IV
 Mary
 MATLAB
-MASM Microsoft Assembly x86
-MATH-MATIC
-Maude system
-Maxima (see also Macsyma)
-Max 
 MaxScript
 Maya
 MDL
 Mercury
 Mesa
-MHEG-5 (Interactive TV programming language)
 Microcode
 Microsoft Power Fx
 MIIS
-Milk (programming language)
 MIMIC
 Mirah
-Miranda
-MIVA Script
-ML
-Model 204
-Modelica
-Malbolge
-Modula
-Modula-2
-Modula-3
-Mohol
-Mojo
-MOO
-Mortran
-Mouse
-MPD
-MSL
 MUMPS
 MuPAD
 Mutan
 Mystic Programming Language
 NASM
-Napier88
 Neko
 Nemerle
 NESL
-Net.Data
-NetLogo
-NetRexx
-NewLISP
-NEWP
-Newspeak
-NewtonScript
-Nial
-Nickle (NITIN)
-Nim
-Nix (Systems configuration language)
-NPL
-Not eXactly C
-Not Quite C
-NSIS
-Nu
-NWScript
-NXT-G
-o:XML
 Oak
 Oberon
 OBJ2
 Object Lisp
-ObjectLOGO
 Object REXX
 Object Pascal
 Objective-C
-Obliq
-OCaml
-occam
-occam-π
 Octave
 OmniMark
-Opa
-Opal
-Open Programming Language (OPL)
-OpenCL
-OpenEdge Advanced Business Language (ABL)
-OpenVera
-OpenQASM
-OPS5
-OptimJ
-Orc
-ORCA/Modula-2
-Oriel
-Orwell
-Oxygene
-Oz
-P
-P4
-P′′
-ParaSail
-PARI/GP
 Pascal – ISO 7185
 Pascal Script
 PCASTL
@@ -594,7 +248,6 @@ PCF
 PEARL
 PeopleCode
 Perl
-PDL
 Pharo
 PHP
 Pico
@@ -602,130 +255,32 @@ Picolisp
 Pict
 Pike
 PILOT
-Pipelines
-Pizza
-PL-11
-PL/0
-PL/B
-PL/C
-PL/I – ISO 6160
-PL/M
-PL/P
-PL/S
-PL/SQL
-PL360
 PLANC
 Plankalkül
 Planner
 PLEX
-PLEXIL
-Plus
-POP-11
 POP-2
 PostScript
-PortablE
-POV-Ray SDL
-Powerhouse
-PowerBuilder
-PowerShell
 PPL
-Processing
-Processing.js
-Prograph
-Project Verona
 Prolog
-PROMAL
-Promela
-PROSE modeling language
-PROTEL
-ProvideX
-Pro*C
-Pure
 Pure Data
 PureScript
 PWCT
 Python
-Q (programming language from Kx Systems)
-Q#
-Qalb
-Quantum Computation Language
-QtScript
-QuakeC
-QPL
-.QL
-R
-R++
 Racket
 Raku
-RAPID
-Rapira
-Ratfiv
-Ratfor
-rc
-Reason
-REBOL
-Red
-Redcode
-REFAL
-REXX
-Ring
-ROOP
-RPG
-RPL
-RSL
-RTL/2
 Ruby
 Rust
 S
-S2
-S3
-S-Lang
-S-PLUS
 SA-C
 SabreTalk
 SAIL
 SAKO
-SAS
-SASL
-Sather
-Sawzall
-Scala
 Scheme
 Scilab
 Scratch
-ScratchJr
-Script.NET
-Sed
-Seed7
-Self
-SenseTalk
-SequenceL
-Serpent
-SETL
-Short Code
-SIMPOL
 SIGNAL
-SiMPLE
-SIMSCRIPT
-Simula
-Simulink
-SISAL
-SKILL
 SLIP
-SMALL
-Smalltalk
-SML
-Strongtalk
-Snap!
-SNOBOL (SPITBOL)
-Snowball
-SOL
-Solidity
-SOPHAEROS
-Source
-SPARK
-Speakeasy
-Speedcode
 SPIN
 SP/k
 SPS
@@ -733,42 +288,17 @@ SQL
 SQR
 Squeak
 Squirrel
-SR
-S/SL
 Starlogo
 Strand
 Stata
-Stateflow
-Subtext
-SBL
 SuperCollider
 Superplan
 SuperTalk
-Swift (Apple programming language)
-Swift (parallel scripting language)
-SYMPL
+Swift
 T
-TACL
-TACPOL
-TADS (Text Adventure Development System)
-TAL
-Tcl
-Tea
-TECO (Text Editor and Corrector)
-TELCOMP
-TeX
-TEX (Text Executive Programming Language)
-TIE
-TMG (TransMoGrifier)
-Tom
-Toi
-Topspeed (Clarion)
-TPU (Text Processing Utility)
 Trac
 TTM
-T-SQL (Transact-SQL)
-Transcript (LiveCode)
-TTCN (Tree and Tabular Combined Notation)
+T-SQL
 Turing
 TUTOR
 TXL
@@ -781,46 +311,14 @@ Unicon
 Uniface
 UNITY
 UnrealScript
-Vala
 Verse
-Vim script
-Viper (Ethereum/Ether (ETH))
-Visual DataFlex
-Visual DialogScript
-Visual FoxPro
-Visual J++ (Visual J plus plus)
-Visual LISP
-Visual Objects
-Visual Prolog
-WATFIV
+Vim
 WebAssembly
-WebDNA
-Whiley
-Winbatch
-Wolfram Language
-Wyvern
-X++ (X plus plus/Microsoft Dynamics AX)
-X10
-XBL
-xHarbour
-XL
-Xojo
-XOTcl
 Xod
 XPL
 XQuery
 XSB
-XSharp (X#)
-XSLT
-Xtend
-Yorick
-YQL
-Yoix
-Z shell
+XSharp
 Zeno
 ZetaLisp
 Zig
-Zonnon
-ZOPL
-ZPL
-Z++

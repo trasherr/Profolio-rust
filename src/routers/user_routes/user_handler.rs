@@ -11,6 +11,10 @@ pub struct UserSubDetails{
     profession: Option<String>,
     experience: i32,
     company: Option<String>,
+    others: Option<String>,
+    github: Option<String>,
+    linkedin: Option<String>,
+    
 }
 
 
@@ -52,6 +56,9 @@ pub async fn update(
   
     u.profession = Set(user_data.profession);
     u.experience = Set(user_data.experience);
+    u.others = Set(user_data.others);
+    u.github = Set(user_data.github);
+    u.linkedin = Set(user_data.linkedin);
 
     u.update(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
