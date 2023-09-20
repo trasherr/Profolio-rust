@@ -33,7 +33,7 @@ pub async fn post_order(
 
 
     let order_data: String = OrderApiReq {
-        amount: 100000,
+        amount: 1000,
         currency: "INR".to_owned(),
         receipt: format!(r#"PF-{}"#,receipt_no)
     }.into();

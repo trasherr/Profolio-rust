@@ -21,6 +21,22 @@ pub async fn roadmap_post(
 
 )-> Result<StatusCode,APIError>{
 
+
+    let roadmaps_delete: Vec<i32> =  roadmap::Entity::find()
+    .filter(roadmap::Column::UserId.eq(user.id))
+    .all(&conn)
+    .await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .into_iter()
+    .map(|item| item.id)
+    .collect();
+
+   roadmap_user::Entity::delete_many().filter(roadmap_user::Column::RoadmapId.is_in(roadmaps_delete.clone())).exec(&conn).await
+   .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+
+    roadmap::Entity::delete_many().filter(roadmap::Column::Id.is_in(roadmaps_delete)).exec(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+
     let target = user::Entity::find()
     .filter(
         Condition::all()
@@ -70,8 +86,12 @@ pub async fn roadmap_post(
 
         let mut required_captains: Vec<user::Model> = vec![];
         
+        if count == 0 {
+            continue;
+        }
 
         for _ in 1..5{
+            println!("{}",count);
             let cap_ids = rand::thread_rng().gen_range(0..count);
             if required_captains.contains(&captions_all[cap_ids]) {
                 continue;
