@@ -48,7 +48,7 @@ pub async fn get_review(
 ) -> Result<Json<Vec<ReviewSoltModel>>,APIError>{
 
     // let cap = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await.unwrap().unwrap();
-    let slots: Vec<ReviewSoltModel>= review_slot::Entity::find().filter(review_slot::Column::UserId.eq(identity.id))
+    let slots: Vec<ReviewSoltModel>= review_slot::Entity::find().filter(Condition::any().add(review_slot::Column::UserId.eq(identity.id)).add(review_slot::Column::CaptionId.eq(identity.id)))
     .find_with_related(user::Entity)
     .order_by_asc(review_slot::Column::SlotTime)
     .all(&conn).await
