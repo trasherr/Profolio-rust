@@ -16,7 +16,7 @@ pub async fn guard<T>(mut request: Request<T>, next: Next<T>) -> Result<Response
     let db = request.extensions().get::<DatabaseConnection>().ok_or(APIError { error_code: None, message: "Could not connect to database".to_owned(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
 
     let user = user::Entity::find()
-        .filter(user::Column::Email.eq(claims.email))
+        .filter(user::Column::Email.eq(claims.email.to_lowercase()))
         .one(db)    
         .await
         .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;

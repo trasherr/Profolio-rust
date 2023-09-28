@@ -118,7 +118,11 @@ pub async fn post_order_signature(
     Json(order_signature): Json<OrderApiSignature>
 ) -> Result<(),APIError>{
 
-    let verify = razorpay::utils::verify_webhook_signature(&format!(r#"{}|{}"#,order_signature.order_id,order_signature.payment_id),&order_signature.signature,&*utils::constants::RAZORPAY_TEST_SECRET_KEY);
+    let secret = match &*utils::constants::PRODUCTION {
+        true => &*utils::constants::RAZORPAY_LIVE_SECRET_KEY,
+        false => &*utils::constants::RAZORPAY_TEST_SECRET_KEY
+    };
+    let verify = razorpay::utils::verify_webhook_signature(&format!(r#"{}|{}"#,order_signature.order_id,order_signature.payment_id),&order_signature.signature,secret);
 
     match  verify {
         Ok(()) => { println!("Signature Match") },

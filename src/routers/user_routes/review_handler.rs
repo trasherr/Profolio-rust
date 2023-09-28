@@ -1,11 +1,12 @@
 
+
 use axum::{http::StatusCode, Json, Extension, extract::Path };
 use chrono::{DateTime, Utc, serde::ts_milliseconds};
 use entity::{user, review_slot, order};
-use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition, QueryOrder, QuerySelect };
+use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition, QueryOrder, QuerySelect, JoinType };
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::{models::{review_model::ReviewSoltModel, user_model::UserMicroModel}, utils::api_error::APIError};
+use crate::{models::{review_model::{ReviewSoltModel, ReviewSoltBookedModel}, user_model::UserMicroModel}, utils::api_error::APIError};
 
 #[derive(Serialize,Deserialize)]
 pub struct CreateSlot{
@@ -35,48 +36,42 @@ pub async fn get_caption_slots(
     .all(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
     .into_iter().map(|item| ReviewSoltModel {
-        id: item.id,uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id,  caption: None
+        id: item.id,uuid: item.uuid, user_id: item.user_id, slot_time: item.slot_time, caption_id: item.caption_id,  caption: None,
+        ..Default::default()
     }).collect();
 
     Ok(Json(slots))
 }
 
+
 pub async fn get_review(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(identity): Extension<user::Model>,
     // Path(caption_id): Path<Uuid>
-) -> Result<Json<Vec<ReviewSoltModel>>,APIError>{
+) -> Result<Json<ReviewSoltBookedModel>,APIError>{
 
-    // let cap = user::Entity::find().filter(user::Column::Uuid.eq(caption_id)).one(&conn).await.unwrap().unwrap();
-    let slots: Vec<ReviewSoltModel>= review_slot::Entity::find().filter(Condition::any().add(review_slot::Column::UserId.eq(identity.id)).add(review_slot::Column::CaptionId.eq(identity.id)))
+    let my_slots: Vec<ReviewSoltModel> = review_slot::Entity::find().filter(review_slot::Column::CaptionId.eq(identity.id))
+    .column_as(user::Column::Name, "user")
+    .join(
+        JoinType::LeftJoin,
+        review_slot::Entity::belongs_to(user::Entity)
+                .from(review_slot::Column::UserId)
+                .to(user::Column::Id)
+                .into(),
+    )
+    .order_by_asc(review_slot::Column::SlotTime).into_json()
+    .all(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .into_iter().map(|item|  item.into()).collect();
+
+    let my_bookings: Vec<ReviewSoltModel> = review_slot::Entity::find().filter(review_slot::Column::UserId.eq(identity.id))
     .find_with_related(user::Entity)
     .order_by_asc(review_slot::Column::SlotTime)
     .all(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
-    .into_iter()
-    .map(|item| 
-        {
-            let temp: UserMicroModel = item.1.first()
-            .map(|item2| UserMicroModel { 
-                name: item2.name.to_owned(), 
-                company: item2.company.to_owned(), 
-                ctc: item2.ctc, uuid: item2.uuid,
-                ..Default::default()
-            }).unwrap();
-
-            ReviewSoltModel {
-                id: item.0.id,
-                uuid: item.0.uuid, 
-                user_id: item.0.user_id,
-                slot_time: item.0.slot_time, 
-                caption_id: item.0.caption_id, 
-                caption: Some(temp),
-            }
-        }
-
-    ).collect();
+    .into_iter().map(|item|  item.into()).collect();
     
-    Ok(Json(slots))
+    Ok(Json(ReviewSoltBookedModel { user_slots: my_slots, booked_slots: my_bookings }))
 }
 
 
@@ -112,6 +107,7 @@ pub async fn get_review_count(
                 slot_time: item.0.slot_time, 
                 caption_id: item.0.caption_id, 
                 caption: Some(temp),
+                ..Default::default()
             }
         }
 
@@ -127,7 +123,6 @@ pub async fn book_slot(
     Path(order_id): Path<String>
 ) -> Result<Json<ReviewSoltModel>, APIError>{
 
-    println!("{}",order_id);
     let order = order::Entity::find()
     .filter(order::Column::OrderId.eq(order_id)).one(&conn)
     .await
@@ -149,7 +144,8 @@ pub async fn book_slot(
         user_id: item.user_id, 
         slot_time: item.slot_time, 
         caption_id: item.caption_id,
-        caption: None
+        caption: None,
+        ..Default::default()
     })
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
 
@@ -183,7 +179,9 @@ pub async fn create_slot(
             user_id: res.user_id, 
             slot_time: res.slot_time, 
             caption_id: res.caption_id,
-            caption: None
+            caption: None,
+            ..Default::default()
+
         })
     )
 
@@ -224,7 +222,9 @@ pub async fn get_slot(
             user_id: slot.user_id, 
             slot_time: slot.slot_time, 
             caption_id: slot.caption_id, 
-            caption: Some(UserMicroModel::from(caption))
+            caption: Some(UserMicroModel::from(caption)),
+            ..Default::default()
+
         }
     ));
 
@@ -249,7 +249,9 @@ pub async fn save_review(
         user_id: item.user_id, 
         slot_time: item.slot_time, 
         caption_id: item.caption_id, 
-        caption: None
+        caption: None,
+        ..Default::default()
+
     }).unwrap();
 
     if slot.caption_id != identity.id {
