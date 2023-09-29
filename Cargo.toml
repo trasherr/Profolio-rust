@@ -30,3 +30,4 @@ tokio-cron-scheduler = "0.9.4"
 hyper = { version = "0.14", features = ["full"] }
 hyper-tls = "0.5.0"
 razorpay = "0.3.3"
+lettre = "0.10"

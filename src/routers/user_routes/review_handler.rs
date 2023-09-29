@@ -70,7 +70,7 @@ pub async fn get_review(
     .all(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
     .into_iter().map(|item|  item.into()).collect();
-    
+
     Ok(Json(ReviewSoltBookedModel { user_slots: my_slots, booked_slots: my_bookings }))
 }
 

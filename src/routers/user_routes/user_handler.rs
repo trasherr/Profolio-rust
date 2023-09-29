@@ -7,16 +7,16 @@ use crate::{models::{user_model::{UserModel, UserMicroModel}, tech_model::TechMo
 
 #[derive(Deserialize)]
 pub struct UserSubDetails{
+    name: String,
     ctc: Option<i32>,
+    phone: String,
     profession: Option<String>,
     experience: i32,
     company: Option<String>,
     others: Option<String>,
     github: Option<String>,
-    linkedin: Option<String>,
-    
+    linkedin: Option<String>,    
 }
-
 
 
 #[derive(Deserialize,Serialize,Debug)]
@@ -40,18 +40,20 @@ pub async fn update(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(identity): Extension<user::Model>, 
     Json(user_data): Json<UserSubDetails>
-) -> Result<StatusCode, APIError> {
+) -> Result<(), APIError> {
 
     
     let mut u: user::ActiveModel = user::Entity::find_by_id(identity.id)
     .one(&conn)
     .await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
-    .unwrap()
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?
     .into();
 
-    u.company = Set(user_data.company);
+    u.name = Set(user_data.name);
+    u.phone = Set(user_data.phone);
 
+    u.company = Set(user_data.company);
     u.ctc = Set(user_data.ctc.unwrap_or(0));
   
     u.profession = Set(user_data.profession);
@@ -62,17 +64,8 @@ pub async fn update(
 
     u.update(&conn).await
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
-    // let u: user::Model = u.update(&conn).await.unwrap();
-    // (StatusCode::OK, Json(json!({
-    //     "email": u.email, 
-    //     "name": u.name, 
-    //     "uuid": u.uuid,
-    //     "ctc": u.ctc,
-    //     "profession": u.profession,
-    //     "experience": u.experience,
-    //     "company": u.company
-    // } ))) 
-    Ok(StatusCode::OK) 
+
+    Ok(()) 
 
 }
 
