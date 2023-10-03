@@ -14,6 +14,7 @@ mod m20230719_172144_create_roadmap_user;
 mod m20230720_060928_seed_user_table;
 mod m20230809_042320_create_order_table;
 mod m20230809_045010_create_order_signature_table;
+mod m20231003_085229_create_otp_table;
 
 
 
@@ -35,6 +36,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20230719_172144_create_roadmap_user::Migration),
             Box::new(m20230809_042320_create_order_table::Migration),
             Box::new(m20230809_045010_create_order_signature_table::Migration),
+            Box::new(m20231003_085229_create_otp_table::Migration),
 
             //  uncomment for seeding // only works after creating entities
             Box::new(m20230623_114507_seed_tech_table::Migration),
