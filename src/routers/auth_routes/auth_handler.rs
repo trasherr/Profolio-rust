@@ -83,8 +83,10 @@ pub async fn forget_password(
     Path(user_email): Path<String>
 ) -> Result<(),APIError> {
 
-    let email = user_email.to_lowercase();
 
+    
+    let email = user_email.to_lowercase();
+    
     let user = user::Entity::find().filter(
         Condition::all()
         .add(user::Column::Email.eq(email))
@@ -94,6 +96,8 @@ pub async fn forget_password(
     .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::UNAUTHORIZED})?
     .ok_or(APIError { error_code: None, message: "Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?;
 
+     entity::otp::Entity::delete_many().filter(entity::otp::Column::UserId.eq(user.id)).exec(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::UNAUTHORIZED})?;
 
     let code = rand::thread_rng().gen_range(100_000..999_999);
 
