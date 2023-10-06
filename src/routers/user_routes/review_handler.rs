@@ -1,14 +1,16 @@
 
 
+use std::ops::Add;
+
 use axum::{http::StatusCode, Json, Extension, extract::Path };
-use chrono::{DateTime, Utc, serde::ts_milliseconds};
+use chrono::{DateTime, Utc, serde::ts_milliseconds, Duration};
 use entity::{user, review_slot, order};
 use sea_orm::{ DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait, Condition, QueryOrder, QuerySelect, JoinType };
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::{models::{review_model::{ReviewSoltModel, ReviewSoltBookedModel}, user_model::UserMicroModel}, utils::api_error::APIError};
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Debug)]
 pub struct CreateSlot{
     #[serde(with = "ts_milliseconds")]
     slot_time: DateTime<Utc>,
@@ -160,13 +162,14 @@ pub async fn create_slot(
     Json(slot_data): Json<CreateSlot>
 ) -> Result<Json<ReviewSoltModel>,APIError>{
 
+    println!("{}",slot_data.slot_time.naive_local());
     if !identity.is_caption {
         return Err(APIError{ error_code: None, status_code: StatusCode::FORBIDDEN, message: "Not enough permissions".to_string() });
     }
 
     let res = review_slot::ActiveModel { 
         caption_id: Set(identity.id),
-        slot_time: Set(slot_data.slot_time.naive_local()),
+        slot_time: Set(slot_data.slot_time.add(Duration::minutes(330)).naive_local()),
         uuid: Set(Uuid::new_v4()),
         ..Default::default()
     }.insert(&conn).await

@@ -101,8 +101,6 @@ pub async fn forget_password(
 
     let code = rand::thread_rng().gen_range(100_000..999_999);
 
-    print!("{}", code);
-
     let current = Utc::now().naive_utc();
     let exp = current.clone() + Duration::minutes(30);
     entity::otp::ActiveModel{
