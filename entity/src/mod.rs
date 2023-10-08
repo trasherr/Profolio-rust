@@ -6,6 +6,7 @@ pub mod leagues;
 pub mod order;
 pub mod order_signature;
 pub mod otp;
+pub mod remove_user;
 pub mod review;
 pub mod review_slot;
 pub mod roadmap;

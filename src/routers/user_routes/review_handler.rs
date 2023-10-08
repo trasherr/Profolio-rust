@@ -162,7 +162,6 @@ pub async fn create_slot(
     Json(slot_data): Json<CreateSlot>
 ) -> Result<Json<ReviewSoltModel>,APIError>{
 
-    println!("{}",slot_data.slot_time.naive_local());
     if !identity.is_caption {
         return Err(APIError{ error_code: None, status_code: StatusCode::FORBIDDEN, message: "Not enough permissions".to_string() });
     }

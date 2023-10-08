@@ -34,6 +34,8 @@ pub enum Relation {
     Order,
     #[sea_orm(has_many = "super::otp::Entity")]
     Otp,
+    #[sea_orm(has_one = "super::remove_user::Entity")]
+    RemoveUser,
     #[sea_orm(has_many = "super::review::Entity")]
     Review,
     #[sea_orm(has_many = "super::review_slot::Entity")]
@@ -53,6 +55,12 @@ impl Related<super::order::Entity> for Entity {
 impl Related<super::otp::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Otp.def()
+    }
+}
+
+impl Related<super::remove_user::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::RemoveUser.def()
     }
 }
 

@@ -18,6 +18,9 @@ lazy_static! {
     pub static ref MAILER_HOST: String = set_mailer_host();
     pub static ref MAILER_PORT: String = set_mailer_port();
 
+    pub static ref APP_SECRET: String = set_app_secret();
+
+
 }
 
 fn set_production() -> bool {
@@ -72,4 +75,9 @@ fn set_mailer_email()-> String {
 fn set_mailer_port()-> String {
     dotenv().ok();
     env::var("MAILER_PORT").unwrap()
+}
+
+fn set_app_secret() -> String {
+    dotenv().ok();
+    env::var("APP_SECRET").unwrap()
 }

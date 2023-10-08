@@ -4,6 +4,7 @@ pub use super::leagues::Entity as Leagues;
 pub use super::order::Entity as Order;
 pub use super::order_signature::Entity as OrderSignature;
 pub use super::otp::Entity as Otp;
+pub use super::remove_user::Entity as RemoveUser;
 pub use super::review::Entity as Review;
 pub use super::review_slot::Entity as ReviewSlot;
 pub use super::roadmap::Entity as Roadmap;

@@ -41,11 +41,12 @@ pub async fn server() {
     let conn = Database::connect(conn_str).await.expect("Database connection failed");
 
     let app = Router::new()
-    .merge(routers::user_routes::user_router())
-    .route_layer(middleware::from_fn(guard::guard))
-    .merge(routers::auth_routes::auth_router())
 
+    .merge(routers::user_routes::user_router())
+    .route_layer(middleware::from_fn(guard::user_guard))
+    .merge(routers::auth_routes::auth_router())
     .merge(routers::home_routes::home_routes())
+    .merge(routers::admin_routes::web_router())
     .layer(Extension(conn));
 
     // run it with hyper on localhost:3000
