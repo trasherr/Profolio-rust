@@ -19,6 +19,17 @@ pub struct UserSubDetails{
     linkedin: Option<String>,    
 }
 
+#[derive(Deserialize)]
+pub struct UserSubMiniDetails{
+    ctc: Option<i32>,
+    profession: Option<String>,
+    experience: i32,
+    company: Option<String>,
+    others: Option<String>,
+    github: Option<String>,
+    linkedin: Option<String>,    
+}
+
 
 #[derive(Deserialize,Serialize,Debug)]
 pub struct TechnologyResponse{
@@ -40,6 +51,35 @@ pub struct Filters{
 pub async fn update(
     Extension(conn): Extension<DatabaseConnection>, 
     Extension(identity): Extension<user::Model>, 
+    Json(user_data): Json<UserSubMiniDetails>
+) -> Result<(), APIError> {
+
+    
+    let mut u: user::ActiveModel = user::Entity::find_by_id(identity.id)
+    .one(&conn)
+    .await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?
+    .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?
+    .into();
+
+    u.company = Set(user_data.company);
+    u.ctc = Set(user_data.ctc.unwrap_or(0));
+  
+    u.profession = Set(user_data.profession);
+    u.experience = Set(user_data.experience);
+    u.others = Set(user_data.others);
+    u.github = Set(user_data.github);
+    u.linkedin = Set(user_data.linkedin);
+
+    u.update(&conn).await
+    .map_err(|err| APIError { error_code: None, message: err.to_string(), status_code: StatusCode::INTERNAL_SERVER_ERROR})?;
+
+    Ok(()) 
+
+}
+pub async fn update_some(
+    Extension(conn): Extension<DatabaseConnection>, 
+    Extension(identity): Extension<user::Model>, 
     Json(user_data): Json<UserSubDetails>
 ) -> Result<(), APIError> {
 
@@ -51,8 +91,6 @@ pub async fn update(
     .ok_or(APIError { error_code: None, message: "Resource Not Found".to_owned(), status_code: StatusCode::NOT_FOUND})?
     .into();
 
-    u.name = Set(user_data.name);
-    u.phone = Set(user_data.phone);
 
     u.company = Set(user_data.company);
     u.ctc = Set(user_data.ctc.unwrap_or(0));

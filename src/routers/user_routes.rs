@@ -1,4 +1,4 @@
-use axum::{ routing::{post, get }, Router, http::Method };
+use axum::{ routing::{post, get, put }, Router, http::Method };
 use tower_http::cors::{Any,CorsLayer};
 
 mod user_handler;
@@ -18,6 +18,7 @@ pub fn user_router() -> Router {
     Router::new()
     .route(&config::endpoint("/user") ,get(user_handler::user))
     .route(&config::endpoint("/user"),post(user_handler::update))
+    // .route(&config::endpoint("/user/initial"),post(user_handler::update_some))
     .route(&config::endpoint("/user/tech"),post(user_handler::add_tech))
     .route(&config::endpoint("/user/tech"),get(user_handler::user_tech))
     .route(&config::endpoint("/user/targets"),post(user_handler::get_target_post))
